@@ -3,15 +3,6 @@
 
 body {
   @include spacing();
-  background: $night-bg;
   height: 100vh;
   overflow: hidden;
-
-  &.day {
-    background-color: $day-bg;
-  }
-
-  &.night {
-    background-color: $night-bg;
-  }
 }
