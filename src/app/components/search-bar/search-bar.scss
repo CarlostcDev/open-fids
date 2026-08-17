@@ -1,3 +1,73 @@
-#search-section {
-  
+@use "../../../../styles/mixins" as *;
+
+$icon-size: 30px;
+
+:host {
+  @include flex($direction: column);
+  width: 100%;
+  height: 100%;
+}
+
+#h1 {
+  @include position(relative, 3);
+  @include font($font-size: 3rem, $fluid: true);
+}
+
+#search-bar {
+  @include position(relative, 3);
+  @include flex();
+  width: min(100% - 3rem, 1200px);
+  height: 80px;
+  background: rgb(0 0 0 / 72%);
+  border-radius: 20rem;
+  margin-bottom: 350px;
+
+  #search-svg {
+    @include svg($icon-size, white);
+    padding: 20px;
+  }
+
+  #search-input {
+    width: 80%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
+    outline: none;
+
+    &::placeholder {
+      @include font($font-size: 1.2rem);
+    }
+  }
+
+  #search-button {
+    @include flex();
+    @include font($font-size: 1.2rem);
+    width: 20%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
+    outline: none;
+    border-radius: 0 20rem 20rem 0;
+    cursor: pointer;
+    transition: all 0.3s;
+
+    &:hover {
+      background: white;
+      color: black;
+    }
+
+    &:hover #search-button-svg {
+      fill: black;
+    }
+
+    #search-button-svg {
+      @include svg($icon-size, white);
+      padding: 20px;
+      transition: all 0.3s;
+    }
+  }
 }

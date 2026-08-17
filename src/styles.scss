@@ -2,17 +2,20 @@
 @use "../styles/mixins" as *;
 
 body {
-  @include spacing();
   @include flex();
-  @include background("background-airport");
-  @include size($height: 100vh);
-  @include position($position: relative, $zIndex: 1);
+  @include background($type: "background-airport");
+  @include position(relative, 1);
   overflow: hidden;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  height: 100vh;
 
   &::before {
-    @include size(100%, 100%);
-    @include position($position: absolute, $top: 0, $zIndex: 2);
-    content: "";
+    @include position(absolute, 2, 0);
     background: rgb(0 0 0 / 0.51);
+    content: "";
+    width: 100%;
+    height: 100%;
   }
 }

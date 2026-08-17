@@ -1,28 +1,53 @@
-@mixin flex($align: center, $justify: center) {
+@use "./variables" as *;
+@use "./functions" as *;
+
+@mixin flex($align: center, $justify: center, $direction: row) {
   display: flex;
   align-items: $align;
   justify-content: $justify;
+  flex-direction: $direction;
 }
 
-@mixin spacing($padding: 0, $margin: 0) {
-  margin: $margin;
-  padding: $padding;
+@mixin background($color: null, $type: null, $position: center / cover no-repeat) {
+  @if $color != null and $type != null {
+    background: $color url("/backgrounds/#{$type}.webp") $position;
+  } @else if($type != null) {
+    background: url("/backgrounds/#{$type}.webp") $position;
+  } @else if($color != null) {
+    background: $color;
+  }
 }
 
-@mixin size($width: auto, $height: auto) {
-  width: $width;
-  height: $height;
-}
-
-@mixin background($type, $position: center / cover no-repeat) {
-  background: url("/backgrounds/#{$type}.webp") $position;
-}
-
-@mixin position($position, $top: null, $right: null, $bottom: null, $left: null, $zIndex) {
+@mixin position($position, $z-index, $top: null, $right: null, $bottom: null, $left: null) {
   position: $position;
   @if $top != null {top: $top;}
   @if $right != null {right: $right;}
   @if $bottom != null {bottom: $bottom;}
   @if $left != null {left: $left;}
-  z-index: $zIndex;
+  z-index: $z-index;
+}
+
+@mixin font($font-family: $f-family, $font-size: medium, $font-color: $f-color, $fluid: false) {
+  font-family: $font-family;
+  font-size: if($fluid, fluid-font(1.2rem, $font-size), $font-size);
+  color: $font-color;
+}
+
+@mixin border($width: none, $type: solid, $color: transparent, $radius: 0) {
+  @if $width == none {
+    border: none;
+    outline: none;
+  } @else {
+    border: $width $type $color;
+  }
+
+  @if $radius != 0 {
+    border-radius: $radius;
+  }
+}
+
+@mixin svg($size: 30px, $color: white) {
+  width: $size;
+  aspect-ratio: 1;
+  fill: $color;
 }

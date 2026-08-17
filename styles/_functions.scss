@@ -1,0 +1,5 @@
+@function fluid-font($min-size: 1rem, $max-size: 3rem, $min-viewport: 320px, $max-viewport: 1920px) {
+  $slope: calc(($max-size - $min-size) / ($max-viewport - $min-viewport));
+  $intercept: calc($min-size - ($slope * $min-viewport));
+  @return clamp($min-size, calc(#{$intercept} + (#{$slope} * 100vw)), $max-size);
+}
