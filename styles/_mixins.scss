@@ -9,18 +9,20 @@
   padding: $padding;
 }
 
-@mixin size($width, $height) {
+@mixin size($width: auto, $height: auto) {
   width: $width;
   height: $height;
 }
 
-@mixin cloud($type, $position: center / contain no-repeat) {
-  background: url("/clouds/#{$type}-cloud.webp") $position;
+@mixin background($type, $position: center / cover no-repeat) {
+  background: url("/backgrounds/#{$type}.webp") $position;
 }
 
-@mixin position($top: null, $right: null, $bottom: null, $left: null) {
+@mixin position($position, $top: null, $right: null, $bottom: null, $left: null, $zIndex) {
+  position: $position;
   @if $top != null {top: $top;}
   @if $right != null {right: $right;}
   @if $bottom != null {bottom: $bottom;}
   @if $left != null {left: $left;}
+  z-index: $zIndex;
 }

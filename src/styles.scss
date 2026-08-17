@@ -3,6 +3,16 @@
 
 body {
   @include spacing();
-  height: 100vh;
+  @include flex();
+  @include background("background-airport");
+  @include size($height: 100vh);
+  @include position($position: relative, $zIndex: 1);
   overflow: hidden;
+
+  &::before {
+    @include size(100%, 100%);
+    @include position($position: absolute, $top: 0, $zIndex: 2);
+    content: "";
+    background: rgb(0 0 0 / 0.51);
+  }
 }
