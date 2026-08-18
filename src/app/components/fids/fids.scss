@@ -1,0 +1,114 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#fids {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+  color: #262626;
+}
+
+#fids-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 80px;
+  padding: 0 30px;
+  background: #155c5f;
+  color: #ffffff;
+
+  .airport {
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+  }
+
+  .airport-code {
+    font-size: 2rem;
+    font-weight: 700;
+  }
+
+  .airport-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  .page {
+    font-size: 1rem;
+  }
+}
+
+#flight-list {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.flight {
+  display: grid;
+  grid-template-columns: 90px 120px 1fr 180px 100px 100px;
+  align-items: center;
+  height: 30px;
+  padding: 0 30px;
+  box-sizing: border-box;
+  font-size: 0.95rem;
+
+  &:nth-child(odd) {
+    background: #ececec;
+  }
+}
+
+.flight-time {
+  font-weight: 700;
+}
+
+.flight-number {
+  font-weight: 700;
+}
+
+.flight-destination {
+  font-weight: 600;
+}
+
+.flight-status {
+  font-weight: 700;
+}
+
+.flight-terminal,
+.flight-gate {
+  text-align: center;
+}
+
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 1.5rem;
+}
+
+#fids-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 50px;
+  padding: 0 30px;
+  background: #155c5f;
+  color: #ffffff;
+
+  button {
+    padding: 8px 16px;
+    border: 0;
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: default;
+    opacity: 0.5;
+  }
+}

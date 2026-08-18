@@ -1,4 +1,4 @@
-import {Component, computed, signal, viewChild} from '@angular/core';
+import {Component, computed, signal} from '@angular/core';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {AirportsList} from '../airports-list/airports-list';
 
@@ -22,11 +22,7 @@ export class SearchBar {
 
   readonly airports = computed(() => {
     const query = this.query().trim().toLowerCase();
-
-    if (query.length < 3) {
-      return [];
-    }
-
+    if (query.length < 3) return [];
     const airports = this.allAirports().filter(airport =>
       airport.iata_code.toLowerCase().includes(query) ||
       airport.name.toLowerCase().includes(query)
@@ -35,10 +31,8 @@ export class SearchBar {
     return airports.sort((a, b) => {
       const aExact = a.iata_code.toLowerCase() === query;
       const bExact = b.iata_code.toLowerCase() === query;
-
       if (aExact && !bExact) return -1;
       if (!aExact && bExact) return 1;
-
       return 0;
     });
   });

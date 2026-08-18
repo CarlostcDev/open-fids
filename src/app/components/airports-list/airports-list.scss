@@ -53,13 +53,12 @@
     .airport-download {
       @include flex($justify: flex-start, $gap: 5px);
       @include font($weight: bold);
+      @include border(none, $radius: 5px);
       cursor: pointer;
       background: #155c5f;
       padding: 5px 10px;
       transition: background 0.3s;
-      margin-right: 20px;
-      border: none;
-      outline: none;
+      margin-right: 40px;
       color: white;
 
       &:hover {
