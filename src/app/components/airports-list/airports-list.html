@@ -1,4 +1,12 @@
-<ul>
-  <li>Narita Airport</li>
-  <li>Singapore Airport</li>
+<ul id="airports-list">
+  @for (airport of airports(); track airport.iata_code) {
+    <li class="airport">
+      <span class="airport-code">{{ airport.iata_code }}</span>
+      <span class="airport-name">{{ airport.name }}</span>
+      <button type="button" class="airport-download" (click)="downloadFids(airport)">
+        <svg aria-hidden="true" class="download-svg"><use href="/svgs/sprite.svg#download"></use></svg>
+        <span class="download-span">Download FIDS</span>
+      </button>
+    </li>
+  }
 </ul>

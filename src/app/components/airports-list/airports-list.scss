@@ -1,19 +1,74 @@
 @use "../../../../styles/mixins" as *;
 
 :host {
-  @include position(relative, 2);
-  @include border(3px, solid, #155c5f, 20rem);
+  @include position(absolute, 3, 50.6%);
+  @include border(0 3px 3px 3px, solid, #155c5f, 0 0 50px 50px);
+  @include flex(flex-start, flex-start);
   background: #ffffff;
   color: #262626;
   width: min(100% - 3rem, 1200px);
-  visibility: visible;
+  visibility: hidden;
+  overflow: hidden;
 }
 
 :host.active {
   visibility: visible;
 }
 
-ul {
-  @include flex(flex-start, flex-start, column, 5px);
-  list-style-type: none;
+#airports-list {
+  @include flex(flex-start, flex-start, column);
+  width: 100%;
+  max-height: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  scrollbar-color: #155c5f transparent;
+  scrollbar-width: thin;
+
+  .airport {
+    @include flex($justify: flex-start, $gap: 10px);
+    @include font($font-color: #155c5f, $font-size: 1.2rem, $weight: bold);
+    width: 100%;
+    padding: 5px;
+
+    &:nth-child(odd) {
+      background: #ececec;
+    }
+
+    &:hover {
+      background: rgb(220 220 220);
+    }
+
+    .airport-code {
+      flex: 0.3;
+      margin-left: 20px;
+    }
+
+    .airport-name {
+      flex: 4;
+    }
+
+    .airport-download {
+      @include flex($justify: flex-start, $gap: 5px);
+      @include font($weight: bold);
+      cursor: pointer;
+      background: #155c5f;
+      padding: 5px 10px;
+      transition: background 0.3s;
+      margin-right: 20px;
+      border: none;
+      outline: none;
+      color: white;
+
+      &:hover {
+        background: #262626;
+      }
+
+      .download-svg {
+        @include svg();
+      }
+    }
+  }
 }

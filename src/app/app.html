@@ -1,1 +1,5 @@
-<app-search-bar></app-search-bar>
+@if (airport()?.get('airport'); as iata) {
+  <app-fids [iata]="iata"></app-fids>
+} @else {
+  <app-search-bar></app-search-bar>
+}

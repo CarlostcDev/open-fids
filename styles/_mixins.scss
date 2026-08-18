@@ -57,7 +57,9 @@
     border: none;
     outline: none;
   } @else {
-    border: $width $type $color;
+    border-width: $width;
+    border-style: $type;
+    border-color: $color;
   }
 
   @if $radius != 0 {
