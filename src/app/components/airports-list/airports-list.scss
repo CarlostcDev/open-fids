@@ -1,0 +1,19 @@
+@use "../../../../styles/mixins" as *;
+
+:host {
+  @include position(relative, 2);
+  @include border(3px, solid, #155c5f, 20rem);
+  background: #ffffff;
+  color: #262626;
+  width: min(100% - 3rem, 1200px);
+  visibility: visible;
+}
+
+:host.active {
+  visibility: visible;
+}
+
+ul {
+  @include flex(flex-start, flex-start, column, 5px);
+  list-style-type: none;
+}

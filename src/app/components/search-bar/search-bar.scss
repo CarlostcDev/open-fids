@@ -6,67 +6,77 @@ $icon-size: 30px;
   @include flex($direction: column);
   width: 100%;
   height: 100%;
+  margin-top: -100px;
 }
 
 #h1 {
   @include position(relative, 3);
-  @include font($font-size: 3rem, $fluid: true);
+  @include font($font-size: 3rem, $fluid: true, $font-color: white, $shadow: 0 0 10px #155c5f);
 }
 
 #search-bar {
   @include position(relative, 3);
   @include flex();
+  @include border(3px, solid, #155c5f, 20rem);
   width: min(100% - 3rem, 1200px);
   height: 80px;
-  background: rgb(0 0 0 / 72%);
-  border-radius: 20rem;
-  margin-bottom: 350px;
+  background: white;
+  transition: all 0.3s;
+  box-shadow: 0 0 20px rgb(21 92 95 / 0.63);
+
+  &:hover {
+    background: rgb(236 236 236);
+  }
+
+  &:has(#search-input:focus) {
+    background: rgb(229 229 229 / 0.94);
+  }
 
   #search-svg {
-    @include svg($icon-size, white);
+    @include svg($icon-size, #155c5f);
     padding: 20px;
   }
 
   #search-input {
-    width: 80%;
+    @include font($font-size: 1.8rem, $font-color: #155c5f, $fluid: true);
+    width: 85%;
     height: 100%;
     margin: 0;
-    padding: 0;
+    padding: 5px;
     background: none;
     border: none;
     outline: none;
 
     &::placeholder {
-      @include font($font-size: 1.2rem);
+      @include font($font-size: 1.8rem, $font-color: #155c5f, $fluid: true);
     }
   }
 
   #search-button {
-    @include flex();
-    @include font($font-size: 1.2rem);
-    width: 20%;
+    @include flex($gap: 10px);
+    @include font($font-size: 1.3rem, $font-color: #155c5f, $fluid: true, $weight: bold);
+    width: 15%;
     height: 100%;
     margin: 0;
-    padding: 0;
     background: none;
     border: none;
     outline: none;
     border-radius: 0 20rem 20rem 0;
     cursor: pointer;
     transition: all 0.3s;
+    padding: 0;
 
     &:hover {
-      background: white;
-      color: black;
+      background: #155c5f;
+      color: white;
     }
 
     &:hover #search-button-svg {
-      fill: black;
+      fill: white;
     }
 
     #search-button-svg {
-      @include svg($icon-size, white);
-      padding: 20px;
+      @include svg($icon-size, #155c5f);
       transition: all 0.3s;
     }
   }

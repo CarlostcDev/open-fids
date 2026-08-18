@@ -1,11 +1,12 @@
 @use "./variables" as *;
 @use "./functions" as *;
 
-@mixin flex($align: center, $justify: center, $direction: row) {
+@mixin flex($align: center, $justify: center, $direction: row, $gap: 0) {
   display: flex;
   align-items: $align;
   justify-content: $justify;
   flex-direction: $direction;
+  gap: $gap;
 }
 
 @mixin background($color: null, $type: null, $position: center / cover no-repeat) {
@@ -27,7 +28,7 @@
   z-index: $z-index;
 }
 
-@mixin font($font-family: $f-family, $font-size: medium, $font-color: $f-color, $fluid: false) {
+@mixin font($font-family: $f-family, $font-size: medium, $font-color: $f-color, $fluid: false, $shadow: null, $align: null, $weight: null) {
   font-family: $font-family;
 
   @if $fluid {
@@ -37,6 +38,18 @@
   }
 
   color: $font-color;
+
+  @if $shadow != null {
+    text-shadow: $shadow;
+  }
+
+  @if $align != null {
+    text-align: $align;
+  }
+
+  @if $weight != null {
+    font-weight: $weight;
+  }
 }
 
 @mixin border($width: none, $type: solid, $color: transparent, $radius: 0) {
@@ -52,7 +65,7 @@
   }
 }
 
-@mixin svg($size: 30px, $color: white) {
+@mixin svg($size: 30px, $color: $f-color) {
   width: $size;
   aspect-ratio: 1;
   fill: $color;
