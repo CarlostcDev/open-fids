@@ -29,7 +29,13 @@
 
 @mixin font($font-family: $f-family, $font-size: medium, $font-color: $f-color, $fluid: false) {
   font-family: $font-family;
-  font-size: if($fluid, fluid-font(1.2rem, $font-size), $font-size);
+
+  @if $fluid {
+    font-size: fluid-font(1.2rem, $font-size);
+  } @else {
+    font-size: $font-size;
+  }
+
   color: $font-color;
 }
 
