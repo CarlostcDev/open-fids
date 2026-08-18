@@ -15,7 +15,7 @@ export class AirportsList {
   readonly airports = input<Airport[]>([]);
 
   async downloadFids(airport: Airport): Promise<void> {
-    const url = `https://fids.carlostcdev.workers.dev/?airport=${encodeURIComponent(airport.iata_code)}`;
+    const url = `https://carlostcdev.github.io/flight-information-display-system/?airport=${encodeURIComponent(airport.iata_code)}`;
     try {
       const response = await fetch('/flight-information-display-system/scripts/fids-launcher.bat');
       if (!response.ok) return;
