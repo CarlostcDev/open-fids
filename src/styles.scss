@@ -2,7 +2,7 @@
 
 body {
   @include flex();
-  @include background($type: "open-fids-backgrounds");
+  @include background($type: "open-fids-background");
   @include position(relative, 1);
   overflow: hidden;
   padding: 0;
@@ -12,7 +12,7 @@ body {
 
   &::before {
     @include position(absolute, 2, 0);
-    background: rgb(11 116 121 / 0.67);
+    background: rgb(0 0 0 / 0.77);
     content: "";
     width: 100%;
     height: 100%;

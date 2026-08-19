@@ -1,10 +1,10 @@
 @use "../../../../styles/mixins" as *;
+@use "../../../../styles/variables" as *;
 
 :host {
-  @include position(absolute, 3, 50.6%);
-  @include border(0 3px 3px 3px, solid, #155c5f, 0 0 50px 50px);
+  @include border(0 3px 3px 3px, solid, $primary, 0 0 50px 50px);
   @include flex(flex-start, flex-start);
-  background: #ffffff;
+  background: #0a0a0a;
   color: #262626;
   width: min(100% - 3rem, 1200px);
   visibility: hidden;
@@ -24,21 +24,22 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  scrollbar-color: #155c5f transparent;
+  scrollbar-color: $primary transparent;
   scrollbar-width: thin;
 
   .airport {
     @include flex($justify: flex-start, $gap: 10px);
-    @include font($font-color: #155c5f, $font-size: 1.2rem, $weight: bold);
+    @include font($font-color: $f-color, $font-size: 1.2rem, $weight: bold);
     width: 100%;
     padding: 5px;
 
     &:nth-child(odd) {
-      background: #ececec;
+      background: #131313;
     }
 
     &:hover {
-      background: rgb(220 220 220);
+      background: $primary;
+      color: $secondary;
     }
 
     .airport-code {
@@ -50,23 +51,47 @@
       flex: 4;
     }
 
+    &:hover .airport-download {
+      background: $secondary;
+      color: $primary;
+
+      .download-svg {
+        fill: $primary;
+      }
+    }
+
     .airport-download {
       @include flex($justify: flex-start, $gap: 5px);
       @include font($weight: bold);
       @include border(none, $radius: 5px);
       cursor: pointer;
-      background: #155c5f;
+      background: rgb(3 3 3 / 0.5);
       padding: 5px 10px;
-      transition: background 0.3s;
       margin-right: 40px;
-      color: white;
+      color: $f-color;
 
       &:hover {
+        background: #181818;
+      }
+
+      &:active {
         background: #262626;
       }
 
       .download-svg {
-        @include svg();
+        @include svg($color: $f-color);
+      }
+    }
+  }
+}
+
+@media(max-width: 560px) {
+  #airports-list {
+    .airport {
+      flex-direction: column;
+
+      .airport-download, .airport-code {
+        margin: 0;
       }
     }
   }

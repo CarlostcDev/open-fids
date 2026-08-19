@@ -1,0 +1,4 @@
+<img [alt]="aircraft[currentAircraft()].name"
+  id="aircraft" [class]="aircraft[currentAircraft()].standard"
+  [src]="'aircrafts/' + aircraft[currentAircraft()].standard + '.webp'"
+  (animationiteration)="nextAircraft()">

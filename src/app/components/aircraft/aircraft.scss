@@ -1,0 +1,44 @@
+@use "../../../../styles/mixins" as *;
+@use "../../../../styles/variables" as *;
+
+:host {
+  perspective: 2000px;
+}
+
+#aircraft {
+  @include position(absolute, 1, calc(50% - 2px));
+  animation: landing 40s cubic-bezier(0.3, 0.9, 0.8, 1) infinite;
+}
+
+.airbus-a320-200 {
+  width: clamp(250px, 25vw, 400px);
+}
+
+.airbus-a350-900 {
+  width: clamp(250px, 25vw, 300px);
+}
+
+.airbus-a380-800 {
+  width: clamp(250px, 25vw, 350px);
+}
+
+.boeing-787-10-dreamliner {
+  width: clamp(250px, 25vw, 300px);
+}
+
+@keyframes landing {
+  0% {
+    left: 0;
+    transform: translate(-110%, -50%) rotate(90deg) rotateX(50deg);
+  }
+
+  40% {
+    left: 100%;
+    transform: translate(10%, -50%) rotate(90deg) rotateX(0deg);
+  }
+
+  100% {
+    left: 120%;
+    transform: translate(10%, -50%) rotate(90deg) rotateX(0deg);
+  }
+}

@@ -4,6 +4,7 @@ import {AirportsList} from '../airports-list/airports-list';
 
 interface Airport {
   name: string;
+  city: string;
   iata_code: string;
 }
 
@@ -16,6 +17,7 @@ interface Airport {
 
 export class SearchBar {
   private readonly apiUrl = 'https://fids.carlostcdev.workers.dev/airports';
+  private readonly fallbackUrl = 'data/airports-fallback.json';
   private readonly allAirports = signal<Airport[]>([]);
   readonly searchControl = new FormControl('', {nonNullable: true});
   readonly query = signal('');
@@ -45,8 +47,30 @@ export class SearchBar {
   private async loadAirports(): Promise<void> {
     try {
       const response = await fetch(this.apiUrl);
-      if (!response.ok) return;
-      this.allAirports.set(await response.json());
+      if (!response.ok) {
+        await this.loadFallbackAirports();
+        return;
+      }
+      const airports: Airport[] = await response.json();
+      if (!Array.isArray(airports) || airports.length === 0) {
+        await this.loadFallbackAirports();
+        return;
+      }
+      this.allAirports.set(airports);
+    } catch {
+      await this.loadFallbackAirports();
+    }
+  }
+
+  private async loadFallbackAirports(): Promise<void> {
+    try {
+      const response = await fetch(this.fallbackUrl);
+      if (!response.ok) {
+        this.allAirports.set([]);
+        return;
+      }
+      const airports: Airport[] = await response.json();
+      this.allAirports.set(Array.isArray(airports) ? airports : []);
     } catch {
       this.allAirports.set([]);
     }

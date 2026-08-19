@@ -71,4 +71,6 @@
   width: $size;
   aspect-ratio: 1;
   fill: $color;
+  min-width: $size;
+  max-width: $size;
 }

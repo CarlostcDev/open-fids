@@ -1,48 +1,54 @@
 @use "../../../../styles/mixins" as *;
-
-$icon-size: 30px;
+@use "../../../../styles/variables" as *;
 
 :host {
-  @include flex($direction: column);
+  @include position(relative, 3);
+  @include flex($justify: flex-start, $direction: column);
   width: 100%;
   height: 100%;
-  margin-top: -100px;
+  padding-top: 83px;
 }
 
 #h1 {
+  font-size: 0;
+}
+
+#banner {
   @include position(relative, 3);
-  @include font($font-size: 3rem, $fluid: true, $font-color: white, $shadow: 0 0 10px #155c5f);
+  width: min(100% - 3rem, 1000px);
 }
 
 #search-bar {
-  @include position(relative, 3);
   @include flex();
-  @include border(3px, solid, #155c5f, 20rem);
+  @include border(3px, solid, $primary, 20rem);
   width: min(100% - 3rem, 1200px);
   height: 80px;
-  background: white;
+  background: rgb(9 10 11 / 0.76);
   transition: background 0.3s;
-  box-shadow: 0 0 20px rgb(21 92 95 / 0.63);
 
   &.active {
     border-radius: 50px 50px 0 0;
   }
 
   &:hover {
-    background: rgb(236 236 236);
+    background: rgb(9 10 11);
   }
 
   &:has(#search-input:focus) {
-    background: rgb(229 229 229 / 0.94);
+    background: rgb(7 6 6);
+  }
+
+  &.active #search-button {
+    border-radius: 0 2.85rem 0 0;
   }
 
   #search-svg {
-    @include svg($icon-size, #155c5f);
+    @include svg($icon-size, $primary);
     padding: 20px;
   }
 
   #search-input {
-    @include font($font-size: 1.8rem, $font-color: #155c5f, $fluid: true);
+    @include font($font-family: $f-family-screen, $font-size: 1.8rem, $fluid: true);
     width: 85%;
     height: 100%;
     margin: 0;
@@ -52,35 +58,34 @@ $icon-size: 30px;
     outline: none;
 
     &::placeholder {
-      @include font($font-size: 1.8rem, $font-color: #155c5f, $fluid: true);
+      @include font($font-size: 1.8rem, $fluid: true);
     }
   }
 
   #search-button {
     @include flex($gap: 10px);
-    @include font($font-size: 1.3rem, $font-color: #155c5f, $fluid: true, $weight: bold);
+    @include font($font-size: 1.3rem, $font-color: $primary, $fluid: true, $weight: bold);
+    @include border(none, $radius: 0 20rem 20rem 0);
     width: 15%;
     height: 100%;
     margin: 0;
     background: none;
-    border: none;
-    outline: none;
-    border-radius: 0 20rem 20rem 0;
     cursor: pointer;
     transition: all 0.3s;
     padding: 0;
+    min-width: 150px;
 
     &:hover {
-      background: #155c5f;
-      color: white;
+      background: $primary;
+      color: $secondary;
     }
 
     &:hover #search-button-svg {
-      fill: white;
+      fill: $secondary;
     }
 
     #search-button-svg {
-      @include svg($icon-size, #155c5f);
+      @include svg($icon-size, $primary);
       transition: all 0.3s;
     }
   }
