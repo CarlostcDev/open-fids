@@ -11,9 +11,9 @@
 
 @mixin background($color: null, $type: null, $position: center / cover no-repeat) {
   @if $color != null and $type != null {
-    background: $color url("backgrounds/#{$type}.webp") $position;
+    background: $color url("https://carlostcdev.github.io/open-fids/backgrounds/#{$type}.webp") $position;
   } @else if($type != null) {
-    background: url("backgrounds/#{$type}.webp") $position;
+    background: url("https://carlostcdev.github.io/open-fids/backgrounds/#{$type}.webp") $position;
   } @else if($color != null) {
     background: $color;
   }
