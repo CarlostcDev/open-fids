@@ -1,8 +1,8 @@
 <h1 id="h1">Flight Information Display System</h1>
 <form id="search-bar" [class.active]="airports().length > 0">
-  <svg id="search-svg"><use href="/flight-information-display-system/svgs/sprite.svg#aircraft"></use></svg>
+  <svg id="search-svg"><use href="svgs/sprite.svg#aircraft"></use></svg>
   <input type="text" id="search-input" name="search" autocomplete="off" [formControl]="searchControl" placeholder="Search a commercial airport">  <button type="submit" id="search-button">
-    <svg id="search-button-svg"><use href="/flight-information-display-system/svgs/sprite.svg#search"></use></svg>
+    <svg id="search-button-svg"><use href="svgs/sprite.svg#search"></use></svg>
     <span id="search-button-span">Search</span>
   </button>
 </form>

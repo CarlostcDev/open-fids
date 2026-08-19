@@ -15,15 +15,33 @@ export class AirportsList {
   readonly airports = input<Airport[]>([]);
 
   async downloadFids(airport: Airport): Promise<void> {
-    const url = `https://carlostcdev.github.io/flight-information-display-system/?airport=${encodeURIComponent(airport.iata_code)}`;
+    const url = `https://carlostcdev.github.io/open-fids/?airport=${encodeURIComponent(airport.iata_code)}`;
+    const local = `http://localhost:4200/?airport=${encodeURIComponent(airport.iata_code)}`;
+    const platform = navigator.platform;
+    let scriptPath: string;
+    let fileName: string;
+    let mimeType: string;
+
+    if (/Win/i.test(platform)) {
+      scriptPath = 'scripts/fids-launcher.bat';
+      fileName = `FIDS-${airport.iata_code}.bat`;
+      mimeType = 'application/bat';
+    } else if (/Linux/i.test(platform)) {
+      scriptPath = 'scripts/fids-launcher.sh';
+      fileName = `FIDS-${airport.iata_code}.sh`;
+      mimeType = 'application/x-sh';
+    } else {
+      return;
+    }
+
     try {
-      const response = await fetch('/flight-information-display-system/scripts/fids-launcher.bat');
+      const response = await fetch(scriptPath);
       if (!response.ok) return;
       const script = (await response.text()).replace('__FIDS_URL__', url);
-      const blob = new Blob([script], {type: 'application/bat'});
+      const blob = new Blob([script], {type: mimeType});
       const download = document.createElement('a');
       download.href = URL.createObjectURL(blob);
-      download.download = `FIDS-${airport.iata_code}.bat`;
+      download.download = fileName;
       download.click();
       URL.revokeObjectURL(download.href);
     } catch {

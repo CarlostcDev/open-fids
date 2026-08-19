@@ -7,19 +7,27 @@ set "URL=__FIDS_URL__"
 set "CHROME="
 
 echo ========================================
-echo        FIDS Launcher
+echo           OpenFIDS Launcher
 echo ========================================
 echo.
 echo Target:
 echo %URL%
 echo.
 
-echo [1/5] Checking for Google Chrome...
+if not defined URL (
+    echo ERROR: FIDS URL is not defined.
+    echo.
+    pause
+    exit /b 1
+)
 
-if exist "%ProgramFiles%\\Google\\Chrome\\Application\\chrome.exe" set "CHROME=%ProgramFiles%\\Google\\Chrome\\Application\\chrome.exe"
-if exist "%ProgramFiles(x86)%\\Google\\Chrome\\Application\\chrome.exe" set "CHROME=%ProgramFiles(x86)%\\Google\\Chrome\\Application\\chrome.exe"
-if exist "%LocalAppData%\\Google\\Chrome\\Application\\chrome.exe" set "CHROME=%LocalAppData%\\Google\\Chrome\\Application\\chrome.exe"
-if exist "%ProgramW6432%\\Google\\Chrome\\Application\\chrome.exe" set "CHROME=%ProgramW6432%\\Google\\Chrome\\Application\\chrome.exe"
+echo [1/5] Checking for Google Chrome...
+echo.
+
+if exist "%ProgramFiles%\Google\Chrome\Application\chrome.exe" set "CHROME=%ProgramFiles%\Google\Chrome\Application\chrome.exe"
+if exist "%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe" set "CHROME=%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe"
+if exist "%LocalAppData%\Google\Chrome\Application\chrome.exe" set "CHROME=%LocalAppData%\Google\Chrome\Application\chrome.exe"
+if exist "%ProgramW6432%\Google\Chrome\Application\chrome.exe" set "CHROME=%ProgramW6432%\Google\Chrome\Application\chrome.exe"
 
 if not defined CHROME (
     for /f "delims=" %%C in ('where chrome.exe 2^>nul') do (
@@ -38,6 +46,7 @@ echo Google Chrome was not found.
 echo.
 
 echo [2/5] Checking for Winget...
+echo.
 
 where winget.exe >nul 2>&1
 if errorlevel 1 (
@@ -53,6 +62,7 @@ echo Winget found.
 echo.
 
 echo [3/5] Installing Google Chrome...
+echo.
 
 winget install --id Google.Chrome --exact --silent --accept-package-agreements --accept-source-agreements
 
@@ -69,10 +79,11 @@ echo Google Chrome installation completed.
 echo.
 
 set "CHROME="
-if exist "%ProgramFiles%\\Google\\Chrome\\Application\\chrome.exe" set "CHROME=%ProgramFiles%\\Google\\Chrome\\Application\\chrome.exe"
-if exist "%ProgramFiles(x86)%\\Google\\Chrome\\Application\\chrome.exe" set "CHROME=%ProgramFiles(x86)%\\Google\\Chrome\\Application\\chrome.exe"
-if exist "%LocalAppData%\\Google\\Chrome\\Application\\chrome.exe" set "CHROME=%LocalAppData%\\Google\\Chrome\\Application\\chrome.exe"
-if exist "%ProgramW6432%\\Google\\Chrome\\Application\\chrome.exe" set "CHROME=%ProgramW6432%\\Google\\Chrome\\Application\\chrome.exe"
+
+if exist "%ProgramFiles%\Google\Chrome\Application\chrome.exe" set "CHROME=%ProgramFiles%\Google\Chrome\Application\chrome.exe"
+if exist "%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe" set "CHROME=%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe"
+if exist "%LocalAppData%\Google\Chrome\Application\chrome.exe" set "CHROME=%LocalAppData%\Google\Chrome\Application\chrome.exe"
+if exist "%ProgramW6432%\Google\Chrome\Application\chrome.exe" set "CHROME=%ProgramW6432%\Google\Chrome\Application\chrome.exe"
 
 if not defined CHROME (
     for /f "delims=" %%C in ('where chrome.exe 2^>nul') do (
@@ -110,7 +121,7 @@ echo.
 echo [5/5] Starting FIDS in kiosk mode...
 echo.
 
-set "FIDS_PROFILE=%TEMP%\\FIDS-Kiosk"
+set "FIDS_PROFILE=%TEMP%\FIDS-Kiosk"
 
 if exist "%FIDS_PROFILE%" (
     rmdir /S /Q "%FIDS_PROFILE%" >nul 2>&1
@@ -127,11 +138,18 @@ if not exist "%FIDS_PROFILE%" (
 
 start "" "%CHROME%" --kiosk --user-data-dir="%FIDS_PROFILE%" --no-first-run --no-default-browser-check "%URL%"
 
+timeout /t 2 /nobreak >nul
+
+tasklist /FI "IMAGENAME eq chrome.exe" 2>nul | find /I "chrome.exe" >nul
 if errorlevel 1 (
-    echo ERROR: Failed to start Google Chrome.
+    echo ERROR: Google Chrome failed to start.
     echo.
     pause
     exit /b 1
 )
+
+echo.
+echo FIDS started successfully.
+echo.
 
 exit /b 0

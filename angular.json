@@ -36,6 +36,7 @@
           },
           "configurations": {
             "production": {
+              "baseHref": "/open-fids/",
               "budgets": [
                 {
                   "type": "initial",

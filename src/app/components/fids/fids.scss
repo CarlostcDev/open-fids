@@ -1,114 +1,91 @@
+@use "../../../../styles/mixins" as *;
+@use "../../../../styles/variables" as *;
+
+$yellow: #fdd511;
+
 :host {
-  display: block;
   width: 100%;
   height: 100vh;
   overflow: hidden;
+
+  * {
+    user-select: none;
+  }
 }
 
 #fids {
+  @include position(relative, 4);
   display: grid;
   grid-template-rows: auto 1fr auto;
   width: 100%;
   height: 100%;
-  background: #ffffff;
-  color: #262626;
-}
+  background: #131313;
 
-#fids-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 80px;
-  padding: 0 30px;
-  background: #155c5f;
-  color: #ffffff;
+  #fids-header {
+    @include flex(center, space-between);
+    min-height: 80px;
+    padding: 0 30px;
+    background: #0a0a0a;
 
-  .airport {
-    display: flex;
-    align-items: baseline;
-    gap: 20px;
+    .airport {
+      @include flex(center, flex-start, $gap: 20px);
+      width: 100%;
+    }
+
+    .airport-icon {
+      @include svg(30px, #101010);
+      padding: 10px;
+      border-radius: 10px;
+      background: $yellow;
+    }
+
+    .airport-title {
+      @include font($f-family-screen, 3.3rem, $yellow, $weight: 500);
+    }
   }
 
-  .airport-code {
-    font-size: 2rem;
-    font-weight: 700;
-  }
+  #flight-list {
+    overflow: hidden;
 
-  .airport-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-  }
+    .title-bar {
+      @include font($f-family-screen, 2rem, $yellow, $weight: 500);
+      display: grid;
+      grid-template-columns: 200px 350px 1fr 250px 200px 100px;
+      align-items: center;
+      padding: 0 30px;
+      text-transform: uppercase;
+      background: #0a0a0a;
+    }
 
-  .page {
-    font-size: 1rem;
-  }
-}
+    .flight {
+      @include font($f-family-screen, 2.2rem, $weight: 400);
+      display: grid;
+      grid-template-columns: 200px 100px 250px 1fr 250px 200px 100px;
+      align-items: center;
+      padding: 0 30px;
+      box-sizing: border-box;
 
-#flight-list {
-  min-height: 0;
-  overflow: hidden;
-}
+      &:nth-child(odd) {
+        background: #0a0a0a;
+      }
 
-.flight {
-  display: grid;
-  grid-template-columns: 90px 120px 1fr 180px 100px 100px;
-  align-items: center;
-  height: 30px;
-  padding: 0 30px;
-  box-sizing: border-box;
-  font-size: 0.95rem;
+      .airline-logo {
+        height: 50px;
+        padding: 5px;
+        aspect-ratio: 1;
+      }
+    }
 
-  &:nth-child(odd) {
-    background: #ececec;
-  }
-}
+    .empty {
+      @include flex($gap: 20px);
+      @include font($f-family-screen, 3rem, $weight: 400);
+      height: 100%;
+      background: #0a0a0a;
+      margin-top: -35px;
 
-.flight-time {
-  font-weight: 700;
-}
-
-.flight-number {
-  font-weight: 700;
-}
-
-.flight-destination {
-  font-weight: 600;
-}
-
-.flight-status {
-  font-weight: 700;
-}
-
-.flight-terminal,
-.flight-gate {
-  text-align: center;
-}
-
-.empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  font-size: 1.5rem;
-}
-
-#fids-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 50px;
-  padding: 0 30px;
-  background: #155c5f;
-  color: #ffffff;
-
-  button {
-    padding: 8px 16px;
-    border: 0;
-    cursor: pointer;
-  }
-
-  button:disabled {
-    cursor: default;
-    opacity: 0.5;
+      .empty-icon {
+        @include svg(50px)
+      }
+    }
   }
 }

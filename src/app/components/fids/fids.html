@@ -1,16 +1,24 @@
-<main id="fids">
+<main id="fids" (contextmenu)="$event.preventDefault()">
   <header id="fids-header">
     <div class="airport">
-      <span class="airport-code">{{ iata() }}</span>
+      <svg class="airport-icon"><use href="svgs/sprite.svg#screen-flight"></use></svg>
       <span class="airport-title">Departures</span>
     </div>
-    <div class="page">Page {{ currentPage() }}</div>
   </header>
 
   <section id="flight-list" aria-label="Departures">
+    <div class="title-bar">
+      <span class="title-time">Time</span>
+      <span class="title-flight">Flight</span>
+      <span class="title-destination">Destination</span>
+      <span class="title-remark">Remark</span>
+      <span class="title-terminal">Terminal</span>
+      <span class="title-gate">Gate</span>
+    </div>
     @for (flight of schedules().results; track flight.flight_iata) {
       <article class="flight">
         <time class="flight-time">{{ formatTime(flight) }}</time>
+        <img class="airline-logo" [src]="'https://airlabs.co/img/airline/m/' + flight.airline_iata + '.png'" [alt]="flight.airline_iata" loading="lazy">
         <span class="flight-number">{{ flight.flight_iata ?? '--' }}</span>
         <span class="flight-destination">{{ flight.arr_iata ?? '---' }}</span>
         <span class="flight-status">{{ formatStatus(flight) }}</span>
@@ -18,13 +26,10 @@
         <span class="flight-gate">{{ flight.dep_gate ?? '-' }}</span>
       </article>
     } @empty {
-      <div class="empty">No scheduled flights</div>
+      <div class="empty">
+        <svg class="empty-icon"><use href="svgs/sprite.svg#alert"></use></svg>
+        <span class="empty-text">No scheduled flights</span>
+      </div>
     }
   </section>
-
-  <footer id="fids-footer">
-    <button type="button" [disabled]="currentPage() === 1 || isLoading()" (click)="previousPage()">Previous</button>
-    <span>{{ schedules().results.length }} flights</span>
-    <button type="button" [disabled]="!schedules().has_more || isLoading()" (click)="nextPage()">Next</button>
-  </footer>
 </main>
