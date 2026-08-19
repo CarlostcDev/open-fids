@@ -7,7 +7,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "flight-information-display-system": {
+    "open-fids": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -21,6 +21,7 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
+            "outputPath": "dist/open-fids",
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
@@ -63,10 +64,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "flight-information-display-system:build:production"
+              "buildTarget": "open-fids:build:production"
             },
             "development": {
-              "buildTarget": "flight-information-display-system:build:development"
+              "buildTarget": "open-fids:build:development"
             }
           },
           "defaultConfiguration": "development"
