@@ -32,12 +32,12 @@ jobs:
         run: npm ci
 
       - name: Build Angular
-        run: npm run build -- --base-href /flight-information-display-system/ --deploy-url /flight-information-display-system/
+        run: npm run build -- --base-href /open-fids/ --deploy-url /open-fids/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist/flight-information-display-system/browser
+          path: dist/open-fids/browser
 
       - name: Deploy to GitHub Pages
         id: deployment
