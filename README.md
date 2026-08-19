@@ -315,6 +315,10 @@ Known improvements planned for future versions:
 
    Add pagination so more flight records can be distributed across multiple screens.
 
+5. **Display city names**
+
+   The FIDS currently displays city codes instead of city names. The airport information should be updated so that the corresponding city name is displayed.
+
 ## License
 
 OpenFIDS is distributed under the **MIT License**.
