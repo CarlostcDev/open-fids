@@ -2,7 +2,7 @@
 
 body {
   @include flex();
-  @include background($type: "background-airport");
+  @include background($type: "open-fids-backgrounds");
   @include position(relative, 1);
   overflow: hidden;
   padding: 0;
