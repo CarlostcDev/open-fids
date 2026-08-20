@@ -3,7 +3,7 @@
 <form id="search-bar" role="search" [class.active]="airports().length > 0" (submit)="$event.preventDefault()">
   <svg id="search-svg" aria-hidden="true" focusable="false"><use href="svgs/sprite.svg#aircraft"></use></svg>
   <label for="search-input" class="cdk-visually-hidden">Search commercial airport</label>
-  <input type="text" id="search-input" name="search" autocomplete="off" [formControl]="searchControl" placeholder="Search a commercial airport" aria-autocomplete="list" [attr.aria-expanded]="airports().length > 0">
+  <input type="search" id="search-input" name="search" autocomplete="off" role="combobox" aria-haspopup="listbox" [formControl]="searchControl" placeholder="Search a commercial airport" aria-autocomplete="list" [attr.aria-expanded]="airports().length > 0">
   <button type="submit" id="search-button" aria-label="Search airport">
     <svg id="search-button-svg" aria-hidden="true" focusable="false"><use href="svgs/sprite.svg#search"></use></svg>
     <span id="search-button-span" aria-hidden="true">Search</span>
