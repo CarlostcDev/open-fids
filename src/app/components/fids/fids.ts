@@ -57,6 +57,10 @@ interface Schedule {
   };
 }
 
+interface ScheduleResponse {
+  departures: Schedule[];
+}
+
 @Component({
   selector: 'app-fids',
   templateUrl: './fids.html',
@@ -108,8 +112,8 @@ export class Fids {
       const url = `${this.apiUrl}?dep_iata=${encodeURIComponent(iata)}`;
       const response = await fetch(url, {signal: controller.signal});
       if (!response.ok) {this.data.set([]);return;}
-      const records = await response.json() as Schedule[];
-      if (!controller.signal.aborted) this.data.set(records);
+      const result = await response.json() as ScheduleResponse;
+      if (!controller.signal.aborted) this.data.set(result.departures);
     } catch {
       if (!controller.signal.aborted) this.data.set([]);
     } finally {
