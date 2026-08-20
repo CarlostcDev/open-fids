@@ -293,6 +293,10 @@ The software itself is free and released under the MIT License. The external fli
 
 For a real airport installation, the operator should use its own AirLabs account and API limits appropriate for its expected traffic and refresh requirements.
 
+## SEO, Performance & Accessibility
+
+[![PageSpeed Insights](docs/pagespeed-insight-statistics.png)](https://pagespeed.web.dev/analysis/https-carlostcdev-github-io-open-fids/8fty97twp7?hl=es&form_factor=desktop)
+
 ## Current limitations
 
 OpenFIDS is still under development.
