@@ -15,15 +15,15 @@
       <span class="title-terminal">Terminal</span>
       <span class="title-gate">Gate</span>
     </div>
-    @for (flight of schedules().results; track flight.flight_iata) {
+    @for (flight of schedules(); track flight.number) {
       <article class="flight">
-        <time class="flight-time" [attr.datetime]="flight.dep_estimated ?? flight.dep_time">{{ formatTime(flight) }}</time>
-        <img class="airline-logo" [src]="'https://airlabs.co/img/airline/m/' + flight.airline_iata + '.png'" [alt]="'Airline logo ' + (flight.airline_iata ?? '')" loading="eager" width="50" height="50">
-        <span class="flight-number">{{ flight.flight_iata ?? '--' }}</span>
-        <span class="flight-destination">{{ flight.arr_iata ?? '---' }}</span>
+        <time class="flight-time" [attr.datetime]="flight.departure?.revisedTime?.local ?? flight.departure?.scheduledTime?.local">{{ formatTime(flight) }}</time>
+        <img class="airline-logo" [src]="'https://airlabs.co/img/airline/m/' + (flight.airline?.iata ?? '') + '.png'" [alt]="'Airline logo ' + (flight.airline?.iata ?? '')" loading="eager" width="50" height="50">
+        <span class="flight-number">{{ flight.number ?? '--' }}</span>
+        <span class="flight-destination">{{ flight.arrival?.airport?.name ?? '---' }} / {{ flight.arrival?.airport?.iata ?? '---' }}</span>
         <span class="flight-status">{{ formatStatus(flight) }}</span>
-        <span class="flight-terminal">{{ flight.dep_terminal ?? '-' }}</span>
-        <span class="flight-gate">{{ flight.dep_gate ?? '-' }}</span>
+        <span class="flight-terminal">{{ flight.departure?.terminal ?? '-' }}</span>
+        <span class="flight-gate">{{ flight.departure?.gate ?? '-' }}</span>
       </article>
     } @empty {
       <div class="empty">
