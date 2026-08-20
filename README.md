@@ -271,7 +271,7 @@ This keeps the AirLabs API key on the backend and allows the airport operator to
 
 The public OpenFIDS deployment should therefore be treated as a demonstration/development endpoint rather than the backend for a production airport installation.
 
-## Display behaviour
+## Display behavior
 
 OpenFIDS calculates how many flight records can fit on the available display and loads the corresponding number of records.
 
@@ -311,7 +311,7 @@ Known improvements planned for future versions:
 
    Add a button allowing the display to switch between departure and arrival flights.
 
-4. **Pagination and multi-screen support**
+4. **Pagination and multiscreen support**
 
    Add pagination so more flight records can be distributed across multiple screens.
 

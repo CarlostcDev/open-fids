@@ -1,11 +1,11 @@
-<ul id="airports-list">
+<ul id="airports-list" role="listbox" aria-label="Commercial airports list">
   @for (airport of airports(); track airport.iata_code) {
-    <li class="airport">
+    <li class="airport" role="option" aria-selected="false">
       <span class="airport-code">{{ airport.iata_code }}</span>
       <span class="airport-name">{{ airport.name }}</span>
-      <button type="button" class="airport-download" (click)="downloadFids(airport)">
-        <svg aria-hidden="true" class="download-svg"><use href="svgs/sprite.svg#download"></use></svg>
-        <span class="download-span">Download FIDS</span>
+      <button type="button" class="airport-download" (click)="downloadFids(airport)" [attr.aria-label]="'Download FIDS launcher for ' + airport.name + ' (' + airport.iata_code + ')'">
+        <svg aria-hidden="true" focusable="false" class="download-svg"><use href="svgs/sprite.svg#download"></use></svg>
+        <span class="download-span" aria-hidden="true">Download FIDS</span>
       </button>
     </li>
   }

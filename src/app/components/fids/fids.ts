@@ -35,6 +35,7 @@ export class Fids {
   private readonly data = signal<ScheduleResponse>({limit: 1, total: 0, results: []});
   readonly schedules = this.data.asReadonly();
   private readonly destroyRef = inject(DestroyRef);
+  private abortController: AbortController | null = null;
 
   constructor() {
     const resizeHandler = () => this.updateListHeight();
@@ -46,12 +47,14 @@ export class Fids {
     this.destroyRef.onDestroy(() => {
       window.removeEventListener('resize', resizeHandler);
       clearInterval(refreshInterval);
+      this.abortController?.abort();
     });
 
     afterNextRender(() => this.updateListHeight());
     effect(() => {
       const iata = this.iata();
-      if (this.listHeight() > 0) void this.loadSchedules(iata);
+      const height = this.listHeight();
+      if (height > 0) void this.loadSchedules(iata);
     });
   }
 
@@ -61,7 +64,6 @@ export class Fids {
     const height = element.clientHeight;
     if (height === this.listHeight()) return;
     this.listHeight.set(height);
-    void this.loadSchedules(this.iata());
   }
 
   private getPageSize(): number {
@@ -70,26 +72,27 @@ export class Fids {
 
   private async loadSchedules(iata: string): Promise<void> {
     const limit = this.getPageSize();
+    if (limit < 1) return;
+    this.abortController?.abort();
+    const controller = new AbortController();
+    this.abortController = controller;
     this.loading.set(true);
 
     try {
       const url = `${this.apiUrl}?dep_iata=${encodeURIComponent(iata)}&limit=${limit}`;
-      const response = await fetch(url);
-      if (!response.ok) {
-        this.data.set({limit, total: 0, results: []});
-        return;
-      }
+      const response = await fetch(url, {signal: controller.signal});
+      if (!response.ok) {this.data.set({limit, total: 0, results: []});return;}
       const data = await response.json() as ScheduleResponse;
       data.results.sort((a, b) => {
         const aTime = a.dep_estimated ?? a.dep_time ?? '';
         const bTime = b.dep_estimated ?? b.dep_time ?? '';
-        return aTime.localeCompare(bTime);
+        return aTime < bTime ? -1 : aTime > bTime ? 1 : 0;
       });
-      this.data.set(data);
+      if (!controller.signal.aborted) this.data.set(data);
     } catch {
-      this.data.set({limit, total: 0, results: []});
+      if (!controller.signal.aborted) this.data.set({limit, total: 0, results: []});
     } finally {
-      this.loading.set(false);
+      if (this.abortController === controller) this.loading.set(false);
     }
   }
 

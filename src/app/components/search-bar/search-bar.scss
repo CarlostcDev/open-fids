@@ -9,13 +9,14 @@
   padding-top: 83px;
 }
 
-#h1 {
+#h1, .cdk-visually-hidden {
   font-size: 0;
 }
 
 #banner {
   @include position(relative, 3);
   width: min(100% - 3rem, 1000px);
+  height: auto;
 }
 
 #search-bar {

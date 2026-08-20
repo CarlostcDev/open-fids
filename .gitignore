@@ -39,6 +39,7 @@ yarn-error.log
 testem.log
 /typings
 __screenshots__/
+qodana.yaml
 
 # System files
 .DS_Store

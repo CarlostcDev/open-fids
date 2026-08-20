@@ -1,12 +1,12 @@
-<main id="fids" (contextmenu)="$event.preventDefault()">
+<main id="fids" aria-label="Flight Information Display System" (contextmenu)="$event.preventDefault()">
   <header id="fids-header">
     <div class="airport">
-      <svg class="airport-icon"><use href="svgs/sprite.svg#screen-flight"></use></svg>
-      <span class="airport-title">Departures</span>
+      <svg class="airport-icon" aria-hidden="true"><use href="svgs/sprite.svg#screen-flight"></use></svg>
+      <h1 class="airport-title">Departures</h1>
     </div>
   </header>
 
-  <section id="flight-list" aria-label="Departures">
+  <section id="flight-list" aria-label="Departures schedule" aria-live="polite">
     <div class="title-bar">
       <span class="title-time">Time</span>
       <span class="title-flight">Flight</span>
@@ -17,8 +17,8 @@
     </div>
     @for (flight of schedules().results; track flight.flight_iata) {
       <article class="flight">
-        <time class="flight-time">{{ formatTime(flight) }}</time>
-        <img class="airline-logo" [src]="'https://airlabs.co/img/airline/m/' + flight.airline_iata + '.png'" [alt]="flight.airline_iata" loading="lazy">
+        <time class="flight-time" [attr.datetime]="flight.dep_estimated ?? flight.dep_time">{{ formatTime(flight) }}</time>
+        <img class="airline-logo" [src]="'https://airlabs.co/img/airline/m/' + flight.airline_iata + '.png'" [alt]="'Airline logo ' + (flight.airline_iata ?? '')" loading="eager" width="50" height="50">
         <span class="flight-number">{{ flight.flight_iata ?? '--' }}</span>
         <span class="flight-destination">{{ flight.arr_iata ?? '---' }}</span>
         <span class="flight-status">{{ formatStatus(flight) }}</span>
@@ -27,7 +27,7 @@
       </article>
     } @empty {
       <div class="empty">
-        <svg class="empty-icon"><use href="svgs/sprite.svg#alert"></use></svg>
+        <svg class="empty-icon" aria-hidden="true"><use href="svgs/sprite.svg#alert"></use></svg>
         <span class="empty-text">No scheduled flights</span>
       </div>
     }
