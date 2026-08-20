@@ -67,6 +67,7 @@ interface ScheduleResponse {
   imports: [],
   styleUrl: './fids.scss'
 })
+
 export class Fids {
   readonly iata = input.required<string>();
   private readonly apiUrl = 'https://fids.carlostcdev.workers.dev/schedules';
@@ -75,7 +76,7 @@ export class Fids {
   private readonly loading = signal(false);
   private readonly data = signal<Schedule[]>([]);
   readonly schedules = computed(() => {
-    const count = Math.max(0, Math.floor((this.listHeight() - 60) / this.rowHeight));
+    const count = Math.floor(this.listHeight() / this.rowHeight);
     return this.data().slice(0, count);
   });
   private readonly destroyRef = inject(DestroyRef);
@@ -84,15 +85,18 @@ export class Fids {
 
   constructor() {
     const resizeHandler = () => this.updateListHeight();
+    const timeInterval = setInterval(() => this.updateTime(), 60000);
 
     window.addEventListener('resize', resizeHandler);
     this.destroyRef.onDestroy(() => {
       window.removeEventListener('resize', resizeHandler);
+      clearInterval(timeInterval);
       this.abortController?.abort();
     });
 
     afterNextRender(() => {
       this.updateListHeight();
+      this.updateTime();
       this.loadSchedulesIfNeeded(this.iata());
     });
   }
@@ -137,5 +141,15 @@ export class Fids {
 
   formatStatus(flight: Schedule): string {
     return flight.status ?? 'Scheduled';
+  }
+
+  private readonly currentTime = signal('');
+  readonly time = this.currentTime.asReadonly();
+  private updateTime(): void {
+    this.currentTime.set(new Date().toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    }));
   }
 }

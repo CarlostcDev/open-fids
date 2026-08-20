@@ -4,6 +4,9 @@
       <svg class="airport-icon" aria-hidden="true"><use href="svgs/sprite.svg#screen-flight"></use></svg>
       <h1 class="airport-title">Departures</h1>
     </div>
+    <div class="real-time">
+      <span class="time">{{ time() }}</span>
+    </div>
   </header>
 
   <section id="flight-list" aria-label="Departures schedule" aria-live="polite">
@@ -20,8 +23,9 @@
         <time class="flight-time" [attr.datetime]="flight.departure?.revisedTime?.local ?? flight.departure?.scheduledTime?.local">{{ formatTime(flight) }}</time>
         <img class="airline-logo" [src]="'https://airlabs.co/img/airline/m/' + (flight.airline?.iata ?? '') + '.png'" [alt]="'Airline logo ' + (flight.airline?.iata ?? '')" loading="eager" width="50" height="50">
         <span class="flight-number">{{ flight.number ?? '--' }}</span>
-        <span class="flight-destination">{{ flight.arrival?.airport?.name ?? '---' }} / {{ flight.arrival?.airport?.iata ?? '---' }}</span>
-        <span class="flight-status">{{ formatStatus(flight) }}</span>
+        <span class="flight-destination">{{ flight.arrival?.airport?.iata ?? '---' }}</span>
+        <span class="flight-city">{{ flight.arrival?.airport?.name ?? '---' }}</span>
+        <span class="flight-status" [class.delayed]="formatStatus(flight).toLowerCase() === 'delayed'" [class.scheduled]="formatStatus(flight).toLowerCase() === 'scheduled'" [class.boarding]="formatStatus(flight).toLowerCase() === 'boarding'">{{ formatStatus(flight) }}</span>
         <span class="flight-terminal">{{ flight.departure?.terminal ?? '-' }}</span>
         <span class="flight-gate">{{ flight.departure?.gate ?? '-' }}</span>
       </article>
