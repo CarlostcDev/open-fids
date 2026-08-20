@@ -1,4 +1,4 @@
-import {Component, DestroyRef, afterNextRender, effect, inject, input, signal} from '@angular/core';
+import {Component, DestroyRef, afterNextRender, computed, inject, input, signal} from '@angular/core';
 
 interface Schedule {
   departure?: {
@@ -70,12 +70,17 @@ interface ScheduleResponse {
 export class Fids {
   readonly iata = input.required<string>();
   private readonly apiUrl = 'https://fids.carlostcdev.workers.dev/schedules';
+  private readonly rowHeight = 60;
   private readonly listHeight = signal(0);
   private readonly loading = signal(false);
   private readonly data = signal<Schedule[]>([]);
-  readonly schedules = this.data.asReadonly();
+  readonly schedules = computed(() => {
+    const count = Math.max(0, Math.floor((this.listHeight() - 60) / this.rowHeight));
+    return this.data().slice(0, count);
+  });
   private readonly destroyRef = inject(DestroyRef);
   private abortController: AbortController | null = null;
+  private loadedIata: string | null = null;
 
   constructor() {
     const resizeHandler = () => this.updateListHeight();
@@ -86,11 +91,9 @@ export class Fids {
       this.abortController?.abort();
     });
 
-    afterNextRender(() => this.updateListHeight());
-    effect(() => {
-      const iata = this.iata();
-      const height = this.listHeight();
-      if (height > 0) void this.loadSchedules(iata);
+    afterNextRender(() => {
+      this.updateListHeight();
+      this.loadSchedulesIfNeeded(this.iata());
     });
   }
 
@@ -100,6 +103,12 @@ export class Fids {
     const height = element.clientHeight;
     if (height === this.listHeight()) return;
     this.listHeight.set(height);
+  }
+
+  private loadSchedulesIfNeeded(iata: string): void {
+    if (iata === this.loadedIata) return;
+    this.loadedIata = iata;
+    void this.loadSchedules(iata);
   }
 
   private async loadSchedules(iata: string): Promise<void> {
