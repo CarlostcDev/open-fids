@@ -43,7 +43,8 @@ export class SearchBar {
   });
 
   constructor() {
-    void this.loadAirports();
+    const airport = new URLSearchParams(window.location.search).get('airport');
+    if (!airport) void this.loadAirports();
   }
 
   private async loadAirports(): Promise<void> {
