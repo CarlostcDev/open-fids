@@ -82,13 +82,13 @@ export class Fids {
       const url = `${this.apiUrl}?dep_iata=${encodeURIComponent(iata)}&limit=${limit}`;
       const response = await fetch(url, {signal: controller.signal});
       if (!response.ok) {this.data.set({limit, total: 0, results: []});return;}
-      const data = await response.json() as ScheduleResponse;
-      data.results.sort((a, b) => {
+      const records = await response.json() as Schedule[];
+      records.sort((a, b) => {
         const aTime = a.dep_estimated ?? a.dep_time ?? '';
         const bTime = b.dep_estimated ?? b.dep_time ?? '';
         return aTime < bTime ? -1 : aTime > bTime ? 1 : 0;
       });
-      if (!controller.signal.aborted) this.data.set(data);
+      if (!controller.signal.aborted) this.data.set({limit, total: records.length, results: records.slice(0, limit)});
     } catch {
       if (!controller.signal.aborted) this.data.set({limit, total: 0, results: []});
     } finally {
