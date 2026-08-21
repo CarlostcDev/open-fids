@@ -41,6 +41,25 @@ $yellow: #fdd511;
 
     .airport-title, .time {
       @include font($f-family-screen, 3.3rem, $yellow, $weight: 500);
+      cursor: pointer;
+    }
+
+    .real-time {
+      width: 100%;
+      text-align: right;
+    }
+
+    .airport-icon-wrapper {
+      cursor: pointer;
+    }
+
+    .upload-logo {
+      display: none;
+    }
+
+    .airport-personalized {
+      width: auto;
+      height: 80px;
     }
   }
 
@@ -77,11 +96,11 @@ $yellow: #fdd511;
       }
 
       .delayed {
-        color: #ff4141;
+        color: #ff5656;
       }
 
       .boarding {
-        color: #35ff35;
+        color: #80ff80;
       }
     }
 

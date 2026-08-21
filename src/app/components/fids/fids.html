@@ -1,33 +1,50 @@
 <main id="fids" aria-label="Flight Information Display System" (contextmenu)="$event.preventDefault()">
   <header id="fids-header">
     <div class="airport">
-      <svg class="airport-icon" aria-hidden="true"><use href="svgs/sprite.svg#screen-flight"></use></svg>
-      <h1 class="airport-title">Departures</h1>
+      <div class="airport-icon-wrapper" (mouseenter)="isHoveringIcon.set(true)"
+           (mouseleave)="isHoveringIcon.set(false)" (click)="handleIconClick(fileInput)">
+        @if (uploadedImage()) {
+          @if (isHoveringIcon()) {
+            <svg class="airport-icon color-selection" aria-hidden="true"><use href="svgs/sprite.svg#delete"></use></svg>
+          } @else {
+            <img class="airport-personalized" [src]="uploadedImage()" alt="Custom icon">
+          }
+        } @else {
+          <svg class="airport-icon color-selection" aria-hidden="true"><use [attr.href]="isHoveringIcon() ? 'svgs/sprite.svg#upload' : 'svgs/sprite.svg#screen-flight'"></use></svg>
+        }
+      </div>
+      <input class="upload-logo" type="file" #fileInput (change)="onFileSelected($event)" accept=".webp, .svg, .png">
+      <h1 class="airport-title toggle-mode-btn color-selection" (click)="toggleMode()">{{ mode() === 'departures' ? 'Departures' : 'Arrivals' }}</h1>
     </div>
     <div class="real-time">
-      <span class="time">{{ time() }}</span>
+      <span class="time color-selection" (click)="toggleTimeFormat()">{{ time() }}</span>
     </div>
   </header>
 
-  <section id="flight-list" aria-label="Departures schedule" aria-live="polite">
-    <div class="title-bar">
-      <span class="title-time">Time</span>
-      <span class="title-flight">Flight</span>
-      <span class="title-destination">Destination</span>
-      <span class="title-status">Status</span>
-      <span class="title-terminal">Terminal</span>
-      <span class="title-gate">Gate</span>
+  <section id="flight-list" aria-label="Flight schedule" aria-live="polite">
+    <div class="title-bar" (click)="handleTitleBarClick(colorPicker, $event)" style="cursor: pointer;">
+      <input type="color" #colorPicker [value]="themeColor()" (input)="onColorChange($event)" aria-label="Color selector" style="position: absolute; opacity: 0; width: 0; height: 0; border: 0; padding: 0;">
+      <span class="title-time color-selection">Time</span>
+      <span class="title-flight color-selection">Flight</span>
+      <span class="title-destination color-selection">{{ mode() === 'departures' ? 'Destination' : 'Origin' }}</span>
+      <span class="title-status color-selection">Status</span>
+      <span class="title-terminal color-selection">Terminal</span>
+      @if (mode() === 'departures') {
+        <span class="title-gate color-selection">Gate</span>
+      }
     </div>
     @for (flight of schedules(); track flight.number) {
       <article class="flight">
-        <time class="flight-time" [attr.datetime]="flight.departure?.revisedTime?.local ?? flight.departure?.scheduledTime?.local">{{ formatTime(flight) }}</time>
-        <img class="airline-logo" [src]="'https://airlabs.co/img/airline/m/' + (flight.airline?.iata ?? '') + '.png'" [alt]="'Airline logo ' + (flight.airline?.iata ?? '')" loading="eager" width="50" height="50">
-        <span class="flight-number">{{ flight.number ?? '--' }}</span>
-        <span class="flight-destination">{{ flight.arrival?.airport?.iata ?? '---' }}</span>
-        <span class="flight-city">{{ flight.arrival?.airport?.name ?? '---' }}</span>
-        <span class="flight-status" [class.delayed]="formatStatus(flight).toLowerCase() === 'delayed'" [class.scheduled]="formatStatus(flight).toLowerCase() === 'scheduled'" [class.boarding]="formatStatus(flight).toLowerCase() === 'boarding'">{{ formatStatus(flight) }}</span>
-        <span class="flight-terminal">{{ flight.departure?.terminal ?? '-' }}</span>
-        <span class="flight-gate">{{ flight.departure?.gate ?? '-' }}</span>
+        <time class="flight-time" [attr.datetime]="flight.rawTime">{{ flight.formattedTime }}</time>
+        <img class="airline-logo" [src]="flight.airlineLogo" [alt]="flight.airlineAlt" loading="eager" width="50" height="50">
+        <span class="flight-number">{{ flight.number }}</span>
+        <span class="flight-destination">{{ flight.airportCode }}</span>
+        <span class="flight-city">{{ flight.airportName }}</span>
+        <span class="flight-status" [class.delayed]="flight.isDelayed" [class.scheduled]="flight.isScheduled" [class.boarding]="flight.isBoarding">{{ flight.status }}</span>
+        <span class="flight-terminal">{{ flight.terminal }}</span>
+        @if (mode() === 'departures') {
+          <span class="flight-gate">{{ flight.gate }}</span>
+        }
       </article>
     } @empty {
       <div class="empty">

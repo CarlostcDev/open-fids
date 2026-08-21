@@ -9,6 +9,7 @@
   width: min(100% - 3rem, 1200px);
   visibility: hidden;
   overflow: hidden;
+  clip-path: inset(0 round 0 0 50px 50px);
 }
 
 :host.active {

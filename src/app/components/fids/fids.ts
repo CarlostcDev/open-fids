@@ -1,65 +1,7 @@
-import {Component, DestroyRef, afterNextRender, computed, inject, input, signal} from '@angular/core';
-
-interface Schedule {
-  departure?: {
-    scheduledTime?: {
-      utc?: string;
-      local?: string;
-    };
-    revisedTime?: {
-      utc?: string;
-      local?: string;
-    };
-    runwayTime?: {
-      utc?: string;
-      local?: string;
-    };
-    terminal?: string;
-    checkInDesk?: string;
-    gate?: string;
-    runway?: string;
-    quality?: string[];
-  };
-  arrival?: {
-    airport?: {
-      icao?: string;
-      iata?: string;
-      name?: string;
-      countryCode?: string;
-      timeZone?: string;
-    };
-    scheduledTime?: {
-      utc?: string;
-      local?: string;
-    };
-    revisedTime?: {
-      utc?: string;
-      local?: string;
-    };
-    terminal?: string;
-    baggageBelt?: string;
-    quality?: string[];
-  };
-  number?: string;
-  callSign?: string;
-  status?: string;
-  codeshareStatus?: string;
-  isCargo?: boolean;
-  aircraft?: {
-    reg?: string;
-    modeS?: string;
-    model?: string;
-  };
-  airline?: {
-    name?: string;
-    iata?: string;
-    icao?: string;
-  };
-}
-
-interface ScheduleResponse {
-  departures: Schedule[];
-}
+import { Component, DestroyRef, afterNextRender, computed, inject, input, signal } from '@angular/core';
+import { Schedule } from '../../interfaces/schedule';
+import { ScheduleResponse } from '../../interfaces/schedule-response';
+import { FlightViewModel } from '../../interfaces/flight-view-model';
 
 @Component({
   selector: 'app-fids',
@@ -72,13 +14,47 @@ export class Fids {
   readonly iata = input.required<string>();
   private readonly apiUrl = 'https://fids.carlostcdev.workers.dev/schedules';
   private readonly rowHeight = 60;
+  readonly mode = signal<'departures' | 'arrivals'>(this.getStorageItem('fids_mode', 'departures') as 'departures' | 'arrivals');
+  readonly uploadedImage = signal<string | null>(this.getStorageItem('fids_icon', null));
+  readonly isHoveringIcon = signal(false);
+  private readonly use12HourFormat = signal<boolean>(this.getStorageItem('fids_time_format', 'false') === 'true');
+  private readonly currentTime = signal('');
+  readonly time = this.currentTime.asReadonly();
+  readonly themeColor = signal<string>(this.getStorageItem('fids_theme_color', '#fdd511') as string);
   private readonly listHeight = signal(0);
   private readonly loading = signal(false);
   private readonly data = signal<Schedule[]>([]);
-  readonly schedules = computed(() => {
+
+  readonly schedules = computed<FlightViewModel[]>(() => {
     const count = Math.floor(this.listHeight() / this.rowHeight);
-    return this.data().slice(0, count);
+    const currentMode = this.mode();
+    const isDep = currentMode === 'departures';
+
+    return this.data().slice(0, count).map(flight => {
+      const node = isDep ? flight.departure : flight.arrival;
+      const rawTime = node?.revisedTime?.local ?? node?.scheduledTime?.local;
+      const formattedTime = rawTime ? rawTime.slice(11, 16) : '--:--';
+      const status = flight.status ?? 'Scheduled';
+      const statusLower = status.toLowerCase();
+
+      return {
+        number: flight.number ?? '--',
+        rawTime,
+        formattedTime,
+        airlineLogo: `https://assets.duffel.com/img/airlines/for-light-background/full-color-logo/${flight.airline?.iata ?? ''}.svg`,
+        airlineAlt: `Airline logo ${flight.airline?.iata ?? ''}`,
+        airportCode: isDep ? (flight.arrival?.airport?.iata ?? '---') : (flight.departure?.airport?.iata ?? '---'),
+        airportName: isDep ? (flight.arrival?.airport?.name ?? '---') : (flight.departure?.airport?.name ?? '---'),
+        status,
+        isDelayed: statusLower === 'delayed',
+        isScheduled: statusLower === 'expected' || statusLower === 'scheduled',
+        isBoarding: statusLower === 'boarding',
+        terminal: isDep ? (flight.departure?.terminal ?? '-') : (flight.arrival?.terminal ?? '-'),
+        gate: flight.departure?.gate ?? '-'
+      };
+    });
   });
+
   private readonly destroyRef = inject(DestroyRef);
   private abortController: AbortController | null = null;
   private loadedIata: string | null = null;
@@ -86,8 +62,8 @@ export class Fids {
   constructor() {
     const resizeHandler = () => this.updateListHeight();
     const timeInterval = setInterval(() => this.updateTime(), 60000);
-
     window.addEventListener('resize', resizeHandler);
+
     this.destroyRef.onDestroy(() => {
       window.removeEventListener('resize', resizeHandler);
       clearInterval(timeInterval);
@@ -98,21 +74,88 @@ export class Fids {
       this.updateListHeight();
       this.updateTime();
       this.loadSchedulesIfNeeded(this.iata());
+      this.applyDynamicColor(this.themeColor());
     });
+  }
+
+  toggleMode(): void {
+    const newMode = this.mode() === 'departures' ? 'arrivals' : 'departures';
+    this.mode.set(newMode);
+    this.setStorageItem('fids_mode', newMode);
+    this.loadedIata = null;
+    this.loadSchedulesIfNeeded(this.iata());
+  }
+
+  toggleTimeFormat(): void {
+    const newFormat = !this.use12HourFormat();
+    this.use12HourFormat.set(newFormat);
+    this.setStorageItem('fids_time_format', String(newFormat));
+    this.updateTime();
+  }
+
+  handleIconClick(fileInput: HTMLInputElement): void {
+    if (this.uploadedImage()) {this.uploadedImage.set(null); this.removeStorageItem('fids_icon');}
+    else fileInput.click();
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        this.uploadedImage.set(result);
+        this.setStorageItem('fids_icon', result);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    input.value = '';
+  }
+
+  handleTitleBarClick(colorInput: HTMLInputElement, event: Event): void {
+    if (event.target !== event.currentTarget) colorInput.click();
+  }
+
+  onColorChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.themeColor.set(input.value);
+    this.setStorageItem('fids_theme_color', input.value);
+    this.applyDynamicColor(input.value);
+  }
+
+  private applyDynamicColor(color: string): void {
+    const styleId = 'fids-dynamic-color';
+    let styleEl = document.getElementById(styleId);
+    if (!styleEl) {
+      styleEl = document.createElement('style');
+      styleEl.id = styleId;
+      document.head.appendChild(styleEl);
+    }
+    styleEl.textContent = `
+      :not(svg).color-selection { color: ${color} !important; fill: ${color} !important; }
+      svg.color-selection { background: ${color} !important; }
+    `;
+  }
+
+  private updateTime(): void {
+    this.currentTime.set(new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', hour12: this.use12HourFormat()}));
   }
 
   private updateListHeight(): void {
     const element = document.querySelector<HTMLElement>('#flight-list');
     if (!element) return;
     const height = element.clientHeight;
-    if (height === this.listHeight()) return;
-    this.listHeight.set(height);
+    if (height !== this.listHeight()) this.listHeight.set(height);
   }
 
   private loadSchedulesIfNeeded(iata: string): void {
-    if (iata === this.loadedIata) return;
-    this.loadedIata = iata;
-    void this.loadSchedules(iata);
+    if (iata !== this.loadedIata) {
+      this.loadedIata = iata;
+      void this.loadSchedules(iata);
+    }
   }
 
   private async loadSchedules(iata: string): Promise<void> {
@@ -122,11 +165,13 @@ export class Fids {
     this.loading.set(true);
 
     try {
-      const url = `${this.apiUrl}?dep_iata=${encodeURIComponent(iata)}`;
+      const isDep = this.mode() === 'departures';
+      const param = isDep ? 'dep_iata' : 'arr_iata';
+      const url = `${this.apiUrl}?${param}=${encodeURIComponent(iata)}`;
       const response = await fetch(url, {signal: controller.signal});
       if (!response.ok) {this.data.set([]);return;}
       const result = await response.json() as ScheduleResponse;
-      if (!controller.signal.aborted) this.data.set(result.departures);
+      if (!controller.signal.aborted) this.data.set(isDep ? (result.departures ?? []) : (result.arrivals ?? []));
     } catch {
       if (!controller.signal.aborted) this.data.set([]);
     } finally {
@@ -134,22 +179,16 @@ export class Fids {
     }
   }
 
-  formatTime(flight: Schedule): string {
-    const time = flight.departure?.revisedTime?.local ?? flight.departure?.scheduledTime?.local;
-    return time ? time.slice(11, 16) : '--:--';
+  private getStorageItem(key: string, defaultValue: string | null): string | null {
+    if (typeof localStorage !== 'undefined') return localStorage.getItem(key) ?? defaultValue;
+    return defaultValue;
   }
 
-  formatStatus(flight: Schedule): string {
-    return flight.status ?? 'Scheduled';
+  private setStorageItem(key: string, value: string): void {
+    if (typeof localStorage !== 'undefined') localStorage.setItem(key, value);
   }
 
-  private readonly currentTime = signal('');
-  readonly time = this.currentTime.asReadonly();
-  private updateTime(): void {
-    this.currentTime.set(new Date().toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
-    }));
+  private removeStorageItem(key: string): void {
+    if (typeof localStorage !== 'undefined') localStorage.removeItem(key);
   }
 }

@@ -6,7 +6,6 @@
   @include flex($justify: flex-start, $direction: column);
   width: 100%;
   height: 100%;
-  padding-top: 83px;
 }
 
 #h1, .cdk-visually-hidden {
@@ -15,8 +14,9 @@
 
 #banner {
   @include position(relative, 3);
-  width: min(100% - 3rem, 1000px);
+  width: min(100% - 3rem, 850px);
   height: auto;
+  margin-top: 7%;
 }
 
 #search-bar {
@@ -61,6 +61,11 @@
     &::placeholder {
       @include font($font-size: 1.8rem, $fluid: true);
     }
+
+    &[type="search"]::-webkit-search-cancel-button {
+      -webkit-appearance: none;
+      appearance: none;
+    }
   }
 
   #search-button {
@@ -89,5 +94,33 @@
       @include svg($icon-size, $primary);
       transition: all 0.3s;
     }
+  }
+}
+
+#footer {
+  @include position(absolute, 3, $bottom: 10px);
+  @include flex();
+  width: 100%;
+
+  .footer-list {
+    @include flex($gap: 10px);
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .link {
+    @include font($font-family: $f-family-screen, $font-size: 1.2rem, $font-color: rgb(255 255 255 / 0.71), $fluid: true);
+    text-decoration: none;
+    transition: color 0.3s;
+
+    &:hover {
+      color: white;
+      text-decoration: underline;
+    }
+  }
+
+  .separator {
+    @include font($font-size: 1.7rem, $font-color: rgb(255 255 255 / 0.71), $fluid: true);
   }
 }
