@@ -2,7 +2,7 @@
   @for (airport of airports(); track airport.iata_code) {
     <li class="airport" role="option" aria-selected="false">
       <span class="airport-code">{{ airport.iata_code }}</span>
-      <span class="airport-name">{{ airport.name }}</span>
+      <span class="airport-name">{{ airport.name }}, {{ airport.city }}</span>
       <button type="button" class="airport-download" (click)="downloadFids(airport)" [attr.aria-label]="'Download FIDS launcher for ' + airport.name + ' (' + airport.iata_code + ')'">
         <svg aria-hidden="true" focusable="false" class="download-svg"><use href="svgs/sprite.svg#download"></use></svg>
         <span class="download-span" aria-hidden="true">Download FIDS</span>
