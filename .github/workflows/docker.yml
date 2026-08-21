@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  release:
+    types:
+      - published
 
 permissions:
   contents: read
@@ -17,6 +20,32 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Validate release tag
+        if: github.event_name == 'release'
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: release tag must follow the format vX.Y.Z"
+            exit 1
+          fi
+
+      - name: Validate release version
+        if: github.event_name == 'release'
+        run: |
+          RELEASE_VERSION="${{ github.event.release.tag_name }}"
+          RELEASE_VERSION="${RELEASE_VERSION#v}"
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+
+          echo "Release version: $RELEASE_VERSION"
+          echo "package.json version: $PACKAGE_VERSION"
+
+          if [ "$RELEASE_VERSION" != "$PACKAGE_VERSION" ]; then
+            echo "Error: release version does not match package.json"
+            echo "Update package.json to $RELEASE_VERSION before publishing the release."
+            exit 1
+          fi
+
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -24,9 +53,34 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Check version availability
+        if: github.event_name == 'release'
+        env:
+          VERSION: ${{ github.event.release.tag_name }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${VERSION#v}"
+
+          if gh api "/users/${{ github.repository_owner }}/packages/container/open-fids/versions" --paginate --jq '.[].metadata.container.tags[]' 2>/dev/null | grep -Fxq "$VERSION"; then
+            echo "Error: Docker image version $VERSION already exists in GHCR."
+            echo "Increase the version in package.json before creating a new release."
+            exit 1
+          fi
+
+      - name: Set image tags
+        id: meta
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            VERSION="${{ github.event.release.tag_name }}"
+            VERSION="${VERSION#v}"
+            echo "tags=ghcr.io/carlostcdev/open-fids:${VERSION},ghcr.io/carlostcdev/open-fids:latest" >> "$GITHUB_OUTPUT"
+          else
+            echo "tags=ghcr.io/carlostcdev/open-fids:latest" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: ghcr.io/carlostcdev/open-fids:latest
+          tags: ${{ steps.meta.outputs.tags }}
