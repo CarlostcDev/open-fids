@@ -3,7 +3,7 @@
 
 :host {
   @include position(relative, 3);
-  @include flex($justify: flex-start, $direction: column);
+  @include flex(center, flex-start, column);
   width: 100%;
   height: 100%;
 }
@@ -49,7 +49,7 @@
   }
 
   #search-input {
-    @include font($font-family: $f-family-screen, $font-size: 1.8rem, $fluid: true);
+    @include font($family: $f-family-screen, $size: 1.8rem, $fluid: true);
     width: 85%;
     height: 100%;
     margin: 0;
@@ -59,7 +59,7 @@
     outline: none;
 
     &::placeholder {
-      @include font($font-size: 1.8rem, $fluid: true);
+      @include font($size: 1.8rem, $fluid: true);
     }
 
     &[type="search"]::-webkit-search-cancel-button {
@@ -70,7 +70,7 @@
 
   #search-button {
     @include flex($gap: 10px);
-    @include font($font-size: 1.3rem, $font-color: $primary, $fluid: true, $weight: bold);
+    @include font($size: 1.3rem, $color: $primary, $fluid: true, $weight: bold);
     @include border(none, $radius: 0 20rem 20rem 0);
     width: 15%;
     height: 100%;
@@ -110,7 +110,7 @@
   }
 
   .link {
-    @include font($font-family: $f-family-screen, $font-size: 1.2rem, $font-color: rgb(255 255 255 / 0.71), $fluid: true);
+    @include font($family: $f-family-screen, $size: 1.2rem, $color: rgb(255 255 255 / 0.71), $fluid: true);
     text-decoration: none;
     transition: color 0.3s;
 
@@ -121,6 +121,6 @@
   }
 
   .separator {
-    @include font($font-size: 1.7rem, $font-color: rgb(255 255 255 / 0.71), $fluid: true);
+    @include font($size: 1.7rem, $color: rgb(255 255 255 / 0.71), $fluid: true);
   }
 }

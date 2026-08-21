@@ -2,27 +2,20 @@ import {Component, computed, signal} from '@angular/core';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {toSignal} from '@angular/core/rxjs-interop';
 import {AirportsList} from '../airports-list/airports-list';
-
-interface Airport {
-  name: string;
-  city: string;
-  iata_code: string;
-}
-
-interface SearchAirport extends Airport {
-  searchName: string;
-  searchIata: string;
-}
+import {RouterLink} from '@angular/router';
+import {app} from '../../config/openfids.config';
+import {SearchAirport} from '../../interfaces/search-airport';
+import {Airport} from '../../interfaces/airport';
 
 @Component({
   selector: 'app-search-bar',
   templateUrl: './search-bar.html',
   styleUrl: './search-bar.scss',
-  imports: [ReactiveFormsModule, AirportsList]
+  imports: [ReactiveFormsModule, AirportsList, RouterLink]
 })
 
 export class SearchBar {
-  private readonly apiUrl = 'https://fids.carlostcdev.workers.dev/airports';
+  private readonly apiUrl = `${app.apiUrl}/airports`;
   private readonly fallbackUrl = 'data/airports-fallback.json';
   private readonly allAirports = signal<SearchAirport[]>([]);
   readonly searchControl = new FormControl('', {nonNullable: true});
@@ -71,6 +64,6 @@ export class SearchBar {
   }
 
   private setAirports(airports: Airport[]): void {
-    this.allAirports.set(airports.map(airport => ({...airport, searchName: airport.name.toLowerCase(), searchIata: airport.iata_code.toLowerCase()})));
+    this.allAirports.set(airports.map(airport => ({...airport, searchName: airport.name.toLowerCase(), searchCity: airport.city, searchIata: airport.iata_code.toLowerCase()})));
   }
 }

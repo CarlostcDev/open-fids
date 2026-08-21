@@ -2,6 +2,7 @@ import { Component, DestroyRef, afterNextRender, computed, inject, input, signal
 import { Schedule } from '../../interfaces/schedule';
 import { ScheduleResponse } from '../../interfaces/schedule-response';
 import { FlightViewModel } from '../../interfaces/flight-view-model';
+import {app} from '../../config/openfids.config';
 
 @Component({
   selector: 'app-fids',
@@ -12,7 +13,7 @@ import { FlightViewModel } from '../../interfaces/flight-view-model';
 
 export class Fids {
   readonly iata = input.required<string>();
-  private readonly apiUrl = 'https://fids.carlostcdev.workers.dev/schedules';
+  private readonly apiUrl = `${app.apiUrl}/schedules`;
   private readonly rowHeight = 60;
   readonly mode = signal<'departures' | 'arrivals'>(this.getStorageItem('fids_mode', 'departures') as 'departures' | 'arrivals');
   readonly uploadedImage = signal<string | null>(this.getStorageItem('fids_icon', null));
@@ -41,7 +42,7 @@ export class Fids {
         number: flight.number ?? '--',
         rawTime,
         formattedTime,
-        airlineLogo: `https://assets.duffel.com/img/airlines/for-light-background/full-color-logo/${flight.airline?.iata ?? ''}.svg`,
+        airlineLogo: `${app.urlAirlineLogo}/${flight.airline?.iata ?? ''}.svg`,
         airlineAlt: `Airline logo ${flight.airline?.iata ?? ''}`,
         airportCode: isDep ? (flight.arrival?.airport?.iata ?? '---') : (flight.departure?.airport?.iata ?? '---'),
         airportName: isDep ? (flight.arrival?.airport?.name ?? '---') : (flight.departure?.airport?.name ?? '---'),
@@ -180,15 +181,22 @@ export class Fids {
   }
 
   private getStorageItem(key: string, defaultValue: string | null): string | null {
-    if (typeof localStorage !== 'undefined') return localStorage.getItem(key) ?? defaultValue;
-    return defaultValue;
+    try {
+      return localStorage.getItem(key) ?? defaultValue;
+    } catch {
+      return defaultValue;
+    }
   }
 
   private setStorageItem(key: string, value: string): void {
-    if (typeof localStorage !== 'undefined') localStorage.setItem(key, value);
+    try {
+      localStorage.setItem(key, value);
+    } catch {}
   }
 
   private removeStorageItem(key: string): void {
-    if (typeof localStorage !== 'undefined') localStorage.removeItem(key);
+    try {
+      localStorage.removeItem(key);
+    } catch {}
   }
 }

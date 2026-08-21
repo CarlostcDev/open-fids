@@ -1,9 +1,5 @@
-import {Component, input} from '@angular/core';
-
-interface Airport {
-  name: string;
-  iata_code: string;
-}
+import { Component, input } from '@angular/core';
+import { Airport } from '../../interfaces/airport';
 
 @Component({
   selector: 'app-airports-list',
@@ -17,8 +13,7 @@ export class AirportsList {
 
   async downloadFids(airport: Airport): Promise<void> {
     const iata = encodeURIComponent(airport.iata_code);
-    const url = `https://carlostcdev.github.io/open-fids/?airport=${iata}`;
-    //const local = `http://localhost:4200/?airport=${encodeURIComponent(airport.iata_code)}`;
+    const url = `${window.location.origin}${document.querySelector('base')?.getAttribute('href') || '/'}?airport=${iata}`;
     const platform = navigator.platform;
     let scriptPath: string;
     let fileName: string;

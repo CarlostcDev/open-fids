@@ -1,8 +1,6 @@
 @use "../../../../styles/mixins" as *;
 @use "../../../../styles/variables" as *;
 
-$yellow: #fdd511;
-
 :host {
   width: 100%;
   height: 100vh;
@@ -15,8 +13,7 @@ $yellow: #fdd511;
 
 #fids {
   @include position(relative, 4);
-  display: grid;
-  grid-template-rows: auto 1fr auto;
+  @include grid($rows: auto 1fr auto, $align: initial);
   width: 100%;
   height: 100%;
   background: #131313;
@@ -36,11 +33,11 @@ $yellow: #fdd511;
       @include svg(30px, #101010);
       padding: 10px;
       border-radius: 10px;
-      background: $yellow;
+      background: $primary;
     }
 
     .airport-title, .time {
-      @include font($f-family-screen, 3.3rem, $yellow, $weight: 500);
+      @include font($f-family-screen, 3.3rem, $primary, $weight: 500);
       cursor: pointer;
     }
 
@@ -67,20 +64,16 @@ $yellow: #fdd511;
     overflow: hidden;
 
     .title-bar {
-      @include font($f-family-screen, 2rem, $yellow, $weight: 500);
-      display: grid;
-      grid-template-columns: 150px 280px 1fr 250px 200px 100px;
-      align-items: center;
+      @include grid(150px 280px 1fr 250px 200px 100px);
+      @include font($f-family-screen, 2rem, $primary, $weight: 500);
       padding: 0 30px;
       text-transform: uppercase;
       background: #0a0a0a;
     }
 
     .flight {
+      @include grid(150px 70px 210px 100px 1fr 250px 200px 100px);
       @include font($f-family-screen, 2.2rem, $weight: 400);
-      display: grid;
-      grid-template-columns: 150px 70px 210px 100px 1fr 250px 200px 100px;
-      align-items: center;
       padding: 0 30px;
       box-sizing: border-box;
 
@@ -89,10 +82,8 @@ $yellow: #fdd511;
       }
 
       .airline-logo {
-        width: auto;
-        height: 50px;
+        @include svg(50px);
         padding: 5px;
-        aspect-ratio: 1;
       }
 
       .delayed {

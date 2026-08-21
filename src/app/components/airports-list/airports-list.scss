@@ -5,7 +5,6 @@
   @include border(0 3px 3px 3px, solid, $primary, 0 0 50px 50px);
   @include flex(flex-start, flex-start);
   background: #0a0a0a;
-  color: #262626;
   width: min(100% - 3rem, 1200px);
   visibility: hidden;
   overflow: hidden;
@@ -30,7 +29,7 @@
 
   .airport {
     @include flex($justify: flex-start, $gap: 10px);
-    @include font($font-color: $f-color, $font-size: 1.2rem, $weight: bold);
+    @include font($size: 1.2rem, $weight: bold);
     width: 100%;
     padding: 5px;
 
@@ -43,15 +42,6 @@
       color: $secondary;
     }
 
-    .airport-code {
-      flex: 0.3;
-      margin-left: 20px;
-    }
-
-    .airport-name {
-      flex: 4;
-    }
-
     &:hover .airport-download {
       background: $secondary;
       color: $primary;
@@ -59,6 +49,15 @@
       .download-svg {
         fill: $primary;
       }
+    }
+
+    .airport-code {
+      flex: 0.3;
+      margin-left: 20px;
+    }
+
+    .airport-name {
+      flex: 4;
     }
 
     .airport-download {
@@ -69,7 +68,6 @@
       background: rgb(3 3 3 / 0.5);
       padding: 5px 10px;
       margin-right: 40px;
-      color: $f-color;
 
       &:hover {
         background: #181818;
@@ -80,7 +78,7 @@
       }
 
       .download-svg {
-        @include svg($color: $f-color);
+        @include svg();
       }
     }
   }
@@ -93,6 +91,7 @@
 
       .airport-download, .airport-code {
         margin: 0;
+        padding: 0;
       }
     }
   }

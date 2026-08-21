@@ -1,9 +1,5 @@
-import {Component, signal} from '@angular/core';
-
-interface AircraftData {
-  name: string;
-  standard: string;
-}
+import { Component, signal } from '@angular/core';
+import { AircraftData } from '../../interfaces/aircraft-data';
 
 @Component({
   selector: 'app-aircraft',

@@ -9,47 +9,31 @@
   gap: $gap;
 }
 
-@mixin background($color: null, $type: null, $position: center / cover no-repeat) {
-  @if $color != null and $type != null {
-    background: $color url("https://carlostcdev.github.io/open-fids/backgrounds/#{$type}.webp") $position;
-  } @else if($type != null) {
-    background: url("https://carlostcdev.github.io/open-fids/backgrounds/#{$type}.webp") $position;
-  } @else if($color != null) {
-    background: $color;
-  }
+@mixin grid($columns: null, $rows: null, $align: center) {
+  display: grid;
+  @if $columns != null {grid-template-columns: $columns;}
+  @if $rows != null {grid-template-rows: $rows;}
+  align-items: $align;
 }
 
-@mixin position($position, $z-index, $top: null, $right: null, $bottom: null, $left: null) {
+@mixin position($position, $z-index, $top: null, $right: null, $bottom: null, $left: null, $pseudo: false) {
   position: $position;
   @if $top != null {top: $top;}
   @if $right != null {right: $right;}
   @if $bottom != null {bottom: $bottom;}
   @if $left != null {left: $left;}
+  @if $pseudo {content: "";}
   z-index: $z-index;
 }
 
-@mixin font($font-family: $f-family-text, $font-size: medium, $font-color: $f-color, $fluid: false, $shadow: null, $align: null, $weight: null) {
-  font-family: $font-family;
-
-  @if $fluid {
-    font-size: fluid-font(1.2rem, $font-size);
-  } @else {
-    font-size: $font-size;
-  }
-
-  color: $font-color;
-
-  @if $shadow != null {
-    text-shadow: $shadow;
-  }
-
-  @if $align != null {
-    text-align: $align;
-  }
-
-  @if $weight != null {
-    font-weight: $weight;
-  }
+@mixin font($family: $f-family-text, $size: medium, $color: $f-color, $fluid: false, $shadow: null, $align: null, $weight: null) {
+  font-family: $family;
+  color: $color;
+  @if $fluid {font-size: fluid-font(1.2rem, $size);
+  } @else {font-size: $size;}
+  @if $shadow != null {text-shadow: $shadow;}
+  @if $align != null {text-align: $align;}
+  @if $weight != null {font-weight: $weight;}
 }
 
 @mixin border($width: none, $type: solid, $color: transparent, $radius: 0) {
@@ -62,9 +46,7 @@
     border-color: $color;
   }
 
-  @if $radius != 0 {
-    border-radius: $radius;
-  }
+  @if $radius != 0 {border-radius: $radius;}
 }
 
 @mixin svg($size: 30px, $color: $f-color) {
