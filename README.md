@@ -2,353 +2,200 @@
 
 <img src="public/banners/open-fids-banner-without.webp" alt="OpenFIDS - Flight Information Display System">
 
-**OpenFIDS** is an open-source **Flight Information Display System (FIDS)** released under the **MIT License**.
+OpenFIDS is a free and open-source **Flight Information Display System** for airports.
 
-It provides a free FIDS solution for **Windows**, **Linux distributions** and **Raspberry Pi**, aimed especially at small airports and organizations that need a functional flight information display without investing in commercial FIDS software.
+It provides real-time departure and arrival information through a responsive airport display, with support for local installations, Docker deployments and dedicated kiosk displays.
 
-The application uses **AirLabs API** as its flight and airport data provider. A Cloudflare Worker acts as a backend proxy so the AirLabs API key is never exposed in the frontend.
+## Features
 
-> OpenFIDS is currently under development. The public deployment is intended for development and demonstration purposes and does not have enough AirLabs API capacity for continuous operation in a real airport.
+- Real-time departure and arrival boards.
+- Airport search by IATA code or airport name.
+- Nearby airport detection.
+- Flight number, airline, destination/origin, status, terminal and gate information.
+- 12-hour and 24-hour time formats.
+- Departure / arrival mode switching.
+- Custom airport logo.
+- Custom display color.
+- Persistent display preferences.
+- Windows and Linux kiosk launchers.
+- Responsive number of displayed flights depending on the available screen.
+- Development mode with local mock data.
+- Swagger and OpenAPI documentation.
 
-## How it works
+## Data sources
 
-The system is composed of three main parts:
+OpenFIDS uses different providers depending on the type of information:
 
-```text
-OpenFIDS
-   │
-   │ HTTPS
-   ▼
-Cloudflare Worker
-   │
-   │ API request with secret API key
-   ▼
-AirLabs API
-   │
-   └── Airport and flight data
-```
+| Data                  | Provider                 |
+|-----------------------|--------------------------|
+| Airport list          | AirLabs + local fallback |
+| Flight schedules      | AeroDataBox via RapidAPI |
+| Nearby airports by ip | AeroDataBox via RapidAPI |
+| Development data      | Local mocks              |
 
-The production Worker currently used by the public OpenFIDS deployment is:
+The Cloudflare Worker acts as the backend and keeps the API credentials away from the frontend.
 
-**https://fids.carlostcdev.workers.dev/**
+## Run locally
 
-Its source code is contained in the `fids` directory of:
+### Requirements
 
-**https://github.com/CarlostcDev/carlostcdev-workers**
+- Node.js 24
+- npm 11.12.1
+- Git
 
-The Worker keeps the `AIRLABS_API_KEY` as a Cloudflare secret instead of exposing it to the frontend. It provides the following endpoints:
-
-- `/airports` — retrieves airports containing an IATA code.
-- `/airport?iata=XXX` — retrieves information for a specific airport.
-- `/schedules?dep_iata=XXX` — retrieves departure schedules.
-- `/schedules?arr_iata=XXX` — retrieves arrival schedules.
-- `/docs` — Swagger API documentation.
-- `/openapi.json` — OpenAPI specification.
-
-The schedules endpoint requests a maximum of **50 records** from AirLabs. The Worker also removes duplicate schedule records and combines available codeshare information before ordering the results by flight time.
-
-## Data source
-
-All airport and flight information displayed by OpenFIDS comes from **AirLabs**.
-
-The availability, accuracy, freshness and coverage of the information therefore depend on AirLabs and the data available through its API.
-
-If an airport cannot be found in OpenFIDS, this does not necessarily mean that the airport does not exist. It may mean that AirLabs does not currently provide the corresponding airport data. In that case, the airport operator should contact AirLabs.
-
-## Using OpenFIDS
-
-### 1. Search for an airport
-
-OpenFIDS allows the user to search for an airport using:
-
-- its three-letter IATA code;
-- its airport name in English.
-
-At least **three characters** must be entered before search results are displayed.
-
-The application then displays all matching airports.
-
-### 2. Select the airport
-
-Every airport in the search results contains a **Download FIDS** button.
-
-Selecting an airport generates the appropriate startup script for the operating system.
-
-### 3. Start the FIDS
-
-The downloaded script starts the FIDS for the selected airport.
-
-On Windows, the generated file is a **Batch/Windows-compatible startup script**.
-
-On Linux, the generated file is a **Shell script**.
-
-The script handles the browser required by OpenFIDS:
-
-- If Chrome/Chromium is already installed, it uses the existing installation.
-- If it is not available, the script installs the required browser.
-- It launches the FIDS in **kiosk mode**.
-- The browser is opened in fullscreen.
-- Browser menus and normal browser controls are hidden to prevent normal interaction with the underlying browser interface.
-
-The kiosk process is intentionally designed so that the FIDS behaves as a dedicated display rather than as a normal browser tab.
-
-### Important: existing browser processes
-
-When the startup script is executed, it will **force the closure of existing Chrome/Chromium processes** before launching the FIDS.
-
-This is required to make sure the browser can be started correctly in kiosk mode without an existing browser session interfering with the launch parameters.
-
-Save any work using Chrome/Chromium before executing the script.
-
-To exit the FIDS, close the kiosk browser using the operating system's normal force-close methods, such as `Alt + F4` on Windows/Linux desktop environments where applicable.
-
-## Installing your own backend
-
-The public OpenFIDS deployment uses:
-
-```text
-https://fids.carlostcdev.workers.dev/
-```
-
-That endpoint is intended for the development version of OpenFIDS and should not be considered suitable for running a real airport installation.
-
-For your own deployment, create your own Cloudflare Worker and your own AirLabs API configuration.
-
-### 1. Clone the repositories
-
-Clone the OpenFIDS repository:
+### Installation
 
 ```bash
 git clone https://github.com/CarlostcDev/open-fids.git
 cd open-fids
-```
-
-Clone the Cloudflare Workers repository:
-
-```bash
-git clone https://github.com/CarlostcDev/carlostcdev-workers.git
-cd carlostcdev-workers/fids
-```
-
-The `carlostcdev-workers` repository contains multiple Workers. For OpenFIDS, you only need the:
-
-```text
-/fids
-```
-
-directory.
-
-The FIDS Worker currently uses Wrangler and contains its own `package.json` and `wrangler.jsonc`.
-
-### 2. Create an AirLabs account
-
-Create an account at:
-
-https://airlabs.co/
-
-Obtain an **AirLabs API key** from your AirLabs account.
-
-Your API key is a secret and must not be placed directly into the OpenFIDS frontend or committed to Git.
-
-### 3. Configure the Cloudflare Worker
-
-Install the Worker dependencies:
-
-```bash
 npm install
+npm start
 ```
 
-Log in to Cloudflare:
-
-```bash
-npx wrangler login
-```
-
-Configure the AirLabs API key as a Cloudflare Worker Secret:
-
-```bash
-npx wrangler secret put AIRLABS_API_KEY
-```
-
-When prompted, enter your AirLabs API key.
-
-The Worker is explicitly implemented to read the `AIRLABS_API_KEY` secret from its environment and returns a server configuration error when that secret is unavailable.
-
-You can verify the configured secrets with:
-
-```bash
-npx wrangler secret list
-```
-
-### 4. Test the Worker
-
-Run the Worker locally:
-
-```bash
-npm run dev
-```
-
-The FIDS Worker can then be tested locally before deployment.
-
-The Worker exposes the same core endpoints used by the frontend:
+Open:
 
 ```text
-/airports
-/airport?iata=MAD
-/schedules?dep_iata=MAD
-/schedules?arr_iata=MAD
+http://localhost:4200
 ```
 
-### 5. Deploy the Worker
-
-Deploy the Worker with:
-
-```bash
-npm run deploy
-```
-
-The Worker configuration currently defines the Worker name as `fids` and uses `src/index.ts` as its entry point.
-
-After deployment, Cloudflare will provide the public Worker URL.
-
-### 6. Configure OpenFIDS to use your Worker
-
-Clone the OpenFIDS repository:
-
-```bash
-git clone https://github.com/CarlostcDev/open-fids.git
-cd open-fids
-```
-
-Install the dependencies:
-
-```bash
-npm install
-```
-
-The current OpenFIDS project is an Angular 22 application and uses npm 11.12.1 as its package manager specification.
-
-Replace the API URLs used by OpenFIDS so they point to your own Cloudflare Worker instead of:
+To open a specific airport directly:
 
 ```text
-https://fids.carlostcdev.workers.dev/
+http://localhost:4200/?airport=MAD
 ```
 
-The frontend must use the URL of the Worker you deployed.
-
-After configuring the URLs, build the application:
+### Production build
 
 ```bash
 npm run build
 ```
 
-For local development:
+## Run with Docker
+
+Build the image:
 
 ```bash
-npm start
+docker build -t open-fids .
 ```
 
-The current project is an Angular application generated with Angular CLI and uses `ng serve`/`ng build` through its npm scripts.
+Run it:
 
-## Recommended deployment model
+```bash
+docker run -d \
+  --name open-fids \
+  -p 8080:80 \
+  -e FIDS_API_URL=https://fids.carlostcdev.workers.dev \
+  open-fids
+```
 
-For a real installation, the recommended architecture is:
+Open:
 
 ```text
-Airport Display
-      │
-      ▼
-   OpenFIDS
-      │
-      ▼
-Your Cloudflare Worker
-      │
-      ▼
-Your AirLabs API account
+http://localhost:8080
 ```
 
-This keeps the AirLabs API key on the backend and allows the airport operator to control its own API account and usage limits.
+To use your own backend:
 
-The public OpenFIDS deployment should therefore be treated as a demonstration/development endpoint rather than the backend for a production airport installation.
+```bash
+docker run -d \
+  --name open-fids \
+  -p 8080:80 \
+  -e FIDS_API_URL=https://your-worker.workers.dev \
+  open-fids
+```
 
-## Display behavior
+`FIDS_API_URL` is injected at container startup, so the Docker image does not need to be rebuilt when changing the backend URL.
 
-OpenFIDS calculates how many flight records can fit on the available display and loads the corresponding number of records.
+## Cloudflare Worker
 
-The AirLabs schedule request is currently limited to **50 records**, so the FIDS cannot display more than the number of records available from that request.
+The OpenFIDS Worker is located in the [`carlostcdev-workers`](https://github.com/CarlostcDev/carlostcdev-workers) repository under `/fids`.
 
-The application is therefore designed to adapt the visible number of rows to the screen rather than always rendering a fixed number of flights.
+### 1. Clone the Worker
 
-## Intended use
+```bash
+git clone https://github.com/CarlostcDev/carlostcdev-workers.git
+cd carlostcdev-workers/fids
+npm install
+```
 
-OpenFIDS is particularly intended for:
+### 2. Configure Cloudflare
 
-- small airports;
-- low-budget airport projects;
-- educational or demonstration environments;
-- Raspberry Pi-based display systems;
-- organizations that need a simple FIDS without purchasing a commercial FIDS platform.
+```bash
+npx wrangler login
+```
 
-The software itself is free and released under the MIT License. The external flight and airport data comes from AirLabs and therefore depends on the AirLabs service and the API plan used by the deployment.
+Add the required secrets:
 
-For a real airport installation, the operator should use its own AirLabs account and API limits appropriate for its expected traffic and refresh requirements.
+```bash
+npx wrangler secret put AIRLABS_API_KEY
+npx wrangler secret put RAPIDAPI_KEY
+```
 
-## SEO, Performance & Accessibility
+`AIRLABS_API_KEY` is used for the airport database.
 
-[![PageSpeed Insights](docs/pagespeed-insight-statistics.png)](https://pagespeed.web.dev/analysis/https-carlostcdev-github-io-open-fids/8fty97twp7?hl=es&form_factor=desktop)
+`RAPIDAPI_KEY` is used for AeroDataBox flight schedules and nearby airports.
 
-## Current limitations
+### 3. Test locally
 
-OpenFIDS is still under development.
+```bash
+npm run dev
+```
 
-Known improvements planned for future versions:
+### 4. Deploy
 
-1. **Departure data filtering**
+```bash
+npm run deploy
+```
 
-   In some airports, the departure list can contain aircraft that departed several hours earlier. The departure data handling needs to be improved so that obsolete records are excluded more reliably.
+After deployment, use the generated Worker URL as the OpenFIDS API URL.
 
-2. **FIDS customization**
+## Worker API
 
-   Add a customization system allowing operators to modify interface colors and replace the default OpenFIDS branding with their own company or airport logo.
+```text
+GET /airports
+GET /schedules?dep_iata=MAD
+GET /schedules?arr_iata=MAD
+GET /nearby-airports
 
-3. **Arrival/departure switching**
+GET /docs
+GET /openapi.json
+```
 
-   Add a button allowing the display to switch between departure and arrival flights.
+The Worker also supports `dev=true` for endpoints that have mock data, allowing the application to be developed without consuming external API quotas.
 
-4. **Pagination and multiscreen support**
+Example:
 
-   Add pagination so more flight records can be distributed across multiple screens.
+```text
+/schedules?dep_iata=MAD&dev=true
+```
 
-5. **Display city names**
+## Kiosk mode
 
-   The FIDS currently displays city codes instead of city names. The airport information should be updated so that the corresponding city name is displayed.
+OpenFIDS includes launchers for Windows and Linux that start the selected airport in a dedicated Chromium/Chrome kiosk window.
+
+The launcher can automatically install Chromium when necessary and configure the browser for fullscreen FIDS operation.
+
+> The launcher closes existing Chrome/Chromium processes before starting the FIDS.
+
+## Deployment
+
+OpenFIDS can be deployed as a normal Angular application or as a Docker container.
+
+For a production installation, the recommended architecture is:
+
+```text
+OpenFIDS
+    │
+    ▼
+Cloudflare Worker
+    ├── AirLabs
+    └── AeroDataBox / RapidAPI
+```
+
+This keeps API credentials on the backend and allows each deployment to use its own provider accounts.
 
 ## License
 
-OpenFIDS is distributed under the **MIT License**.
+OpenFIDS is released under the **MIT License**.
 
-The project is open source and can be used, modified and redistributed according to the terms of that license.
-
-## Repositories
-
-### OpenFIDS
-
-https://github.com/CarlostcDev/open-fids
-
-### Cloudflare Workers
-
-https://github.com/CarlostcDev/carlostcdev-workers
-
-The FIDS backend is located at:
-
-```text
-carlostcdev-workers/fids
-```
-
-### Public FIDS API
-
-https://fids.carlostcdev.workers.dev/
-
-### AirLabs
-
-https://airlabs.co/
+See [`LICENSE.txt`](LICENSE.txt) for the full license.
