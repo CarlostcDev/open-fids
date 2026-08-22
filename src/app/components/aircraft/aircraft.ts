@@ -1,9 +1,10 @@
 import { Component, signal } from '@angular/core';
 import { AircraftData } from '../../interfaces/aircraft-data';
+import { AssetPath } from '../../pipes/asset-path';
 
 @Component({
   selector: 'app-aircraft',
-  imports: [],
+  imports: [AssetPath],
   templateUrl: './aircraft.html',
   styleUrl: './aircraft.scss',
 })

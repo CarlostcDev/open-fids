@@ -1,29 +1,28 @@
 <main id="fids" aria-label="Flight Information Display System" (contextmenu)="$event.preventDefault()">
   <header id="fids-header">
     <div class="airport">
-      <div class="airport-icon-wrapper" (mouseenter)="isHoveringIcon.set(true)"
-           (mouseleave)="isHoveringIcon.set(false)" (click)="handleIconClick(fileInput)">
-        @if (uploadedImage()) {
-          @if (isHoveringIcon()) {
+      <div class="airport-icon-wrapper" (mouseenter)="hoverIcon.set(true)" (mouseleave)="hoverIcon.set(false)" (click)="clickIcon(fileInput)">
+        @if (customIcon()) {
+          @if (hoverIcon()) {
             <svg class="airport-icon color-selection" aria-hidden="true"><use href="svgs/sprite.svg#delete"></use></svg>
           } @else {
-            <img class="airport-personalized" [src]="uploadedImage()" alt="Custom icon">
+            <img class="airport-personalized" [src]="customIcon()" alt="Custom icon">
           }
         } @else {
-          <svg class="airport-icon color-selection" aria-hidden="true"><use [attr.href]="isHoveringIcon() ? 'svgs/sprite.svg#upload' : 'svgs/sprite.svg#screen-flight'"></use></svg>
+          <svg class="airport-icon color-selection" aria-hidden="true"><use [attr.href]="hoverIcon() ? 'svgs/sprite.svg#upload' : 'svgs/sprite.svg#screen-flight'"></use></svg>
         }
       </div>
-      <input class="upload-logo" type="file" #fileInput (change)="onFileSelected($event)" accept=".webp, .svg, .png">
+      <input class="upload-logo" type="file" #fileInput (change)="selectFile($event)" accept=".webp, .svg, .png">
       <h1 class="airport-title toggle-mode-btn color-selection" (click)="toggleMode()">{{ mode() === 'departures' ? 'Departures' : 'Arrivals' }}</h1>
     </div>
     <div class="real-time">
-      <span class="time color-selection" (click)="toggleTimeFormat()">{{ time() }}</span>
+      <span class="time color-selection" (click)="toggleTime()">{{ time() }}</span>
     </div>
   </header>
 
   <section id="flight-list" aria-label="Flight schedule" aria-live="polite">
-    <div class="title-bar" (click)="handleTitleBarClick(colorPicker, $event)" style="cursor: pointer;">
-      <input type="color" #colorPicker [value]="themeColor()" (input)="onColorChange($event)" aria-label="Color selector" style="position: absolute; opacity: 0; width: 0; height: 0; border: 0; padding: 0;">
+    <div class="title-bar" (click)="clickTitle(colorPicker, $event)" style="cursor: pointer;">
+      <input type="color" #colorPicker [value]="themeColor()" (input)="changeColor($event)" aria-label="Color selector" style="position: absolute; opacity: 0; width: 0; height: 0; border: 0; padding: 0;">
       <span class="title-time color-selection">Time</span>
       <span class="title-flight color-selection">Flight</span>
       <span class="title-destination color-selection">{{ mode() === 'departures' ? 'Destination' : 'Origin' }}</span>
@@ -33,7 +32,10 @@
         <span class="title-gate color-selection">Gate</span>
       }
     </div>
-    @for (flight of schedules(); track flight.number) {
+
+    @let list = flights();
+
+    @for (flight of list; track flight.number) {
       <article class="flight">
         <time class="flight-time" [attr.datetime]="flight.rawTime">{{ flight.formattedTime }}</time>
         <img class="airline-logo" [src]="flight.airlineLogo" [alt]="flight.airlineAlt" loading="eager" width="50" height="50">
@@ -48,8 +50,12 @@
       </article>
     } @empty {
       <div class="empty">
-        <svg class="empty-icon" aria-hidden="true"><use href="svgs/sprite.svg#alert"></use></svg>
-        <span class="empty-text">No scheduled flights</span>
+        @if (scheduleData.isLoading()) {
+          <span class="empty-text">Loading schedules...</span>
+        } @else {
+          <svg class="empty-icon" aria-hidden="true"><use href="svgs/sprite.svg#alert"></use></svg>
+          <span class="empty-text">No scheduled flights</span>
+        }
       </div>
     }
   </section>

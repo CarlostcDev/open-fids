@@ -1,46 +1,56 @@
 import { Component, DestroyRef, afterNextRender, computed, inject, input, signal } from '@angular/core';
-import { Schedule } from '../../interfaces/schedule';
+import { httpResource } from '@angular/common/http';
 import { ScheduleResponse } from '../../interfaces/schedule-response';
 import { FlightViewModel } from '../../interfaces/flight-view-model';
-import {apiRequestUrl, app} from '../../config/openfids.config';
+import { apiRequestUrl, app } from '../../config/openfids.config';
+import { StorageService } from '../../services/storage.service';
 
 @Component({
   selector: 'app-fids',
   templateUrl: './fids.html',
-  imports: [],
   styleUrl: './fids.scss'
 })
-
 export class Fids {
+  private readonly storage = inject(StorageService);
+  private readonly destroyRef = inject(DestroyRef);
+
   readonly iata = input.required<string>();
-  private readonly rowHeight = 60;
-  readonly mode = signal<'departures' | 'arrivals'>(this.getStorageItem('fids_mode', 'departures') as 'departures' | 'arrivals');
-  readonly uploadedImage = signal<string | null>(this.getStorageItem('fids_icon', null));
-  readonly isHoveringIcon = signal(false);
-  private readonly use12HourFormat = signal<boolean>(this.getStorageItem('fids_time_format', 'false') === 'true');
-  private readonly currentTime = signal('');
-  readonly time = this.currentTime.asReadonly();
-  readonly themeColor = signal<string>(this.getStorageItem('fids_theme_color', '#fdd511') as string);
+
+  readonly mode = signal<'departures' | 'arrivals'>(this.storage.get('fids_mode', 'departures') as 'departures' | 'arrivals');
+  readonly customIcon = signal<string | null>(this.storage.get('fids_icon', null));
+  readonly hoverIcon = signal(false);
+  readonly format12h = signal<boolean>(this.storage.get('fids_time_format', 'false') === 'true');
+  readonly time = signal('');
+  readonly themeColor = signal<string>(this.storage.get('fids_theme_color', '#fdd511') as string);
+
   private readonly listHeight = signal(0);
-  private readonly loading = signal(false);
-  private readonly data = signal<Schedule[]>([]);
+  private readonly rowHeight = 60;
 
-  readonly schedules = computed<FlightViewModel[]>(() => {
-    const count = Math.floor(this.listHeight() / this.rowHeight);
-    const currentMode = this.mode();
-    const isDep = currentMode === 'departures';
+  private readonly scheduleRequest = computed(() => {
+    const param = this.mode() === 'departures' ? 'dep_iata' : 'arr_iata';
+    return { url: apiRequestUrl('schedules', { [param]: this.iata() }) };
+  });
 
-    return this.data().slice(0, count).map(flight => {
+  readonly scheduleData = httpResource<ScheduleResponse>(this.scheduleRequest);
+
+  readonly flights = computed<FlightViewModel[]>(() => {
+    const response = this.scheduleData.value();
+    if (!response) return [];
+
+    const isDep = this.mode() === 'departures';
+    const rawData = isDep ? (response.departures ?? []) : (response.arrivals ?? []);
+    const count = Math.max(0, Math.floor(this.listHeight() / this.rowHeight));
+
+    return rawData.slice(0, count).map(flight => {
       const node = isDep ? flight.departure : flight.arrival;
       const rawTime = node?.revisedTime?.local ?? node?.scheduledTime?.local;
-      const formattedTime = rawTime ? rawTime.slice(11, 16) : '--:--';
       const status = flight.status ?? 'Scheduled';
       const statusLower = status.toLowerCase();
 
       return {
         number: flight.number ?? '--',
         rawTime,
-        formattedTime,
+        formattedTime: rawTime ? rawTime.slice(11, 16) : '--:--',
         airlineLogo: `${app.urlAirlineLogo}/${flight.airline?.iata ?? ''}.svg`,
         airlineAlt: `Airline logo ${flight.airline?.iata ?? ''}`,
         airportCode: isDep ? (flight.arrival?.airport?.iata ?? '---') : (flight.departure?.airport?.iata ?? '---'),
@@ -55,147 +65,94 @@ export class Fids {
     });
   });
 
-  private readonly destroyRef = inject(DestroyRef);
-  private abortController: AbortController | null = null;
-  private loadedIata: string | null = null;
-
   constructor() {
-    const resizeHandler = () => this.updateListHeight();
-    const timeInterval = setInterval(() => this.updateTime(), 60000);
-    window.addEventListener('resize', resizeHandler);
-
-    this.destroyRef.onDestroy(() => {
-      window.removeEventListener('resize', resizeHandler);
-      clearInterval(timeInterval);
-      this.abortController?.abort();
-    });
-
     afterNextRender(() => {
-      this.updateListHeight();
+      this.updateHeight();
       this.updateTime();
-      this.loadSchedulesIfNeeded(this.iata());
-      this.applyDynamicColor(this.themeColor());
+      this.applyColor(this.themeColor());
+
+      const resizeFn = () => this.updateHeight();
+      const timer = setInterval(() => this.updateTime(), 60000);
+
+      window.addEventListener('resize', resizeFn);
+
+      this.destroyRef.onDestroy(() => {
+        window.removeEventListener('resize', resizeFn);
+        clearInterval(timer);
+      });
     });
   }
 
   toggleMode(): void {
-    const newMode = this.mode() === 'departures' ? 'arrivals' : 'departures';
-    this.mode.set(newMode);
-    this.setStorageItem('fids_mode', newMode);
-    this.loadedIata = null;
-    this.loadSchedulesIfNeeded(this.iata());
+    const next = this.mode() === 'departures' ? 'arrivals' : 'departures';
+    this.mode.set(next);
+    this.storage.set('fids_mode', next);
   }
 
-  toggleTimeFormat(): void {
-    const newFormat = !this.use12HourFormat();
-    this.use12HourFormat.set(newFormat);
-    this.setStorageItem('fids_time_format', String(newFormat));
+  toggleTime(): void {
+    const next = !this.format12h();
+    this.format12h.set(next);
+    this.storage.set('fids_time_format', String(next));
     this.updateTime();
   }
 
-  handleIconClick(fileInput: HTMLInputElement): void {
-    if (this.uploadedImage()) {this.uploadedImage.set(null); this.removeStorageItem('fids_icon');}
-    else fileInput.click();
-  }
-
-  onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        this.uploadedImage.set(result);
-        this.setStorageItem('fids_icon', result);
-      };
-      reader.readAsDataURL(file);
+  clickIcon(inputEl: HTMLInputElement): void {
+    if (this.customIcon()) {
+      this.customIcon.set(null);
+      this.storage.remove('fids_icon');
+    } else {
+      inputEl.click();
     }
-
-    input.value = '';
   }
 
-  handleTitleBarClick(colorInput: HTMLInputElement, event: Event): void {
-    if (event.target !== event.currentTarget) colorInput.click();
+  selectFile(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    const file = target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const res = e.target?.result as string;
+      this.customIcon.set(res);
+      this.storage.set('fids_icon', res);
+    };
+    reader.readAsDataURL(file);
+    target.value = '';
   }
 
-  onColorChange(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    this.themeColor.set(input.value);
-    this.setStorageItem('fids_theme_color', input.value);
-    this.applyDynamicColor(input.value);
+  clickTitle(inputEl: HTMLInputElement, event: Event): void {
+    if (event.target !== event.currentTarget) inputEl.click();
   }
 
-  private applyDynamicColor(color: string): void {
-    const styleId = 'fids-dynamic-color';
-    let styleEl = document.getElementById(styleId);
-    if (!styleEl) {
-      styleEl = document.createElement('style');
-      styleEl.id = styleId;
-      document.head.appendChild(styleEl);
+  changeColor(event: Event): void {
+    const val = (event.target as HTMLInputElement).value;
+    this.themeColor.set(val);
+    this.storage.set('fids_theme_color', val);
+    this.applyColor(val);
+  }
+
+  private applyColor(color: string): void {
+    const id = 'fids-color';
+    let el = document.getElementById(id);
+    if (!el) {
+      el = document.createElement('style');
+      el.id = id;
+      document.head.appendChild(el);
     }
-    styleEl.textContent = `
+    el.textContent = `
       :not(svg).color-selection { color: ${color} !important; fill: ${color} !important; }
       svg.color-selection { background: ${color} !important; }
     `;
   }
 
   private updateTime(): void {
-    this.currentTime.set(new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', hour12: this.use12HourFormat()}));
+    this.time.set(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: this.format12h() }));
   }
 
-  private updateListHeight(): void {
-    const element = document.querySelector<HTMLElement>('#flight-list');
-    if (!element) return;
-    const height = element.clientHeight;
-    if (height !== this.listHeight()) this.listHeight.set(height);
-  }
-
-  private loadSchedulesIfNeeded(iata: string): void {
-    if (iata !== this.loadedIata) {
-      this.loadedIata = iata;
-      void this.loadSchedules(iata);
+  private updateHeight(): void {
+    const el = document.querySelector<HTMLElement>('#flight-list');
+    if (el && el.clientHeight !== this.listHeight()) {
+      this.listHeight.set(el.clientHeight);
     }
-  }
-
-  private async loadSchedules(iata: string): Promise<void> {
-    this.abortController?.abort();
-    const controller = new AbortController();
-    this.abortController = controller;
-    this.loading.set(true);
-
-    try {
-      const isDep = this.mode() === 'departures';
-      const param = isDep ? 'dep_iata' : 'arr_iata';
-      const url = apiRequestUrl('schedules', {[param]: iata});
-      const response = await fetch(url, {signal: controller.signal});
-      if (!response.ok) {this.data.set([]);return;}
-      const result = await response.json() as ScheduleResponse;
-      if (!controller.signal.aborted) this.data.set(isDep ? (result.departures ?? []) : (result.arrivals ?? []));
-    } catch {
-      if (!controller.signal.aborted) this.data.set([]);
-    } finally {
-      if (this.abortController === controller) this.loading.set(false);
-    }
-  }
-
-  private getStorageItem(key: string, defaultValue: string | null): string | null {
-    try {
-      return localStorage.getItem(key) ?? defaultValue;
-    } catch {
-      return defaultValue;
-    }
-  }
-
-  private setStorageItem(key: string, value: string): void {
-    try {
-      localStorage.setItem(key, value);
-    } catch {}
-  }
-
-  private removeStorageItem(key: string): void {
-    try {
-      localStorage.removeItem(key);
-    } catch {}
   }
 }

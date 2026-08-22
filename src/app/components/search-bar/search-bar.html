@@ -1,15 +1,17 @@
 <h1 id="h1">OpenFIDS - Flight Information Display System</h1>
-<img src="banners/open-fids-banner-without.webp" alt="OpenFIDS - Flight Information Display System" id="banner" loading="eager" fetchpriority="high" width="1200" height="344">
-<form id="search-bar" role="search" [class.active]="airports().length > 0" (submit)="$event.preventDefault()">
-  <svg id="search-svg" aria-hidden="true" focusable="false"><use href="svgs/sprite.svg#aircraft"></use></svg>
+<img [src]="'open-fids-banner-without' | assetPath:'banners'" alt="OpenFIDS - Flight Information Display System" id="banner" loading="eager" fetchpriority="high" width="1200" height="344">
+<form id="search-bar" role="search" [class.active]="results().length > 0" (submit)="$event.preventDefault()">
+  <svg id="search-svg" aria-hidden="true" focusable="false"><use [attr.href]="'aircraft' | sprite"></use></svg>
   <label for="search-input" class="cdk-visually-hidden">Search commercial airport</label>
-  <input type="search" id="search-input" name="search" autocomplete="off" role="combobox" aria-haspopup="listbox" [formControl]="searchControl" (focus)="onSearchFocus()" (blur)="onSearchBlur()" placeholder="Search a commercial airport" aria-autocomplete="list" [attr.aria-expanded]="airports().length > 0">
+  <input #searchInput type="search" id="search-input" name="search" autocomplete="off" role="combobox" aria-haspopup="listbox"
+    [value]="query()" (input)="query.set(searchInput.value)" (focus)="setFocus(true)" (blur)="setFocus(false)" placeholder="Search a commercial airport"
+    aria-autocomplete="list" [attr.aria-expanded]="results().length > 0">
   <button type="submit" id="search-button" aria-label="Search airport">
-    <svg id="search-button-svg" aria-hidden="true" focusable="false"><use href="svgs/sprite.svg#search"></use></svg>
+    <svg id="search-button-svg" aria-hidden="true" focusable="false"><use [attr.href]="'search' | sprite"></use></svg>
     <span id="search-button-span" aria-hidden="true">Search</span>
   </button>
 </form>
-<app-airports-list [airports]="airports()" [class.active]="airports().length > 0"></app-airports-list>
+<app-airports-list [airports]="results()" [class.active]="results().length > 0"></app-airports-list>
 <footer id="footer">
   <nav class="footer-navigator">
     <ul class="footer-list">

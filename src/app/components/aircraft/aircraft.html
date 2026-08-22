@@ -1,5 +1,5 @@
 <div class="aircraft-container" aria-live="polite">
-  <img [src]="'aircrafts/' + aircraft[currentAircraft()].standard + '.webp'"
+  <img [src]="aircraft[currentAircraft()].standard | assetPath:'aircrafts'"
        [alt]="aircraft[currentAircraft()].name"
        [class]="aircraft[currentAircraft()].standard"
        id="aircraft" loading="eager" width="250" height="200"

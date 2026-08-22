@@ -1,49 +1,21 @@
-import { Component, input } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { Airport } from '../../interfaces/airport';
+import { AirportLocation } from '../../pipes/airport-location';
+import { Sprite } from '../../pipes/sprite';
+import { LauncherService } from '../../services/launcher.service';
 
 @Component({
   selector: 'app-airports-list',
   templateUrl: './airports-list.html',
-  styleUrl: './airports-list.scss'
+  styleUrl: './airports-list.scss',
+  imports: [Sprite, AirportLocation]
 })
 
 export class AirportsList {
   readonly airports = input<Airport[]>([]);
-  private readonly scriptCache = new Map<string, Promise<string>>();
+  private readonly launcher = inject(LauncherService);
 
-  async downloadFids(airport: Airport): Promise<void> {
-    const iata = encodeURIComponent(airport.iata_code);
-    const url = `${window.location.origin}${document.querySelector('base')?.getAttribute('href') || '/'}?airport=${iata}`;
-    const platform = navigator.platform;
-    let scriptPath: string;
-    let fileName: string;
-    let mimeType: string;
-    if (/Win/i.test(platform)) {
-      scriptPath = 'scripts/fids-launcher.bat';
-      fileName = `OpenFIDS-${airport.iata_code}.bat`;
-      mimeType = 'application/bat';
-    } else if (/Linux/i.test(platform)) {
-      scriptPath = 'scripts/fids-launcher.sh';
-      fileName = `OpenFIDS-${airport.iata_code}.sh`;
-      mimeType = 'application/x-sh';
-    } else return;
-
-    try {
-      let scriptPromise = this.scriptCache.get(scriptPath);
-      if (!scriptPromise) {
-        scriptPromise = fetch(scriptPath).then(async response => {if (!response.ok) throw new Error();return response.text();});
-        this.scriptCache.set(scriptPath, scriptPromise);
-      }
-      const script = (await scriptPromise).replace('__FIDS_URL__', url);
-      const blob = new Blob([script], {type: mimeType});
-      const objectUrl = URL.createObjectURL(blob);
-      const download = document.createElement('a');
-      download.href = objectUrl;
-      download.download = fileName;
-      download.click();
-      URL.revokeObjectURL(objectUrl);
-    } catch {
-      return;
-    }
+  download(airport: Airport): void {
+    void this.launcher.download(airport);
   }
 }

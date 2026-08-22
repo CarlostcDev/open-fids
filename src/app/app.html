@@ -1,6 +1,16 @@
-@if (airport()?.get('airport'); as iata) {
-  <app-fids [iata]="iata"></app-fids>
-} @else {
-  <app-search-bar></app-search-bar>
-  <app-aircraft></app-aircraft>
+@if (isRootRoute()) {
+  @let code = iata();
+
+  @if (code) {
+    @defer {
+      <app-fids [iata]="code"></app-fids>
+    }
+  } @else {
+    @defer {
+      <app-search-bar></app-search-bar>
+      <app-aircraft></app-aircraft>
+    }
+  }
 }
+
+<router-outlet></router-outlet>
