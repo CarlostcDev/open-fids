@@ -2,7 +2,7 @@ import { Component, DestroyRef, afterNextRender, computed, inject, input, signal
 import { Schedule } from '../../interfaces/schedule';
 import { ScheduleResponse } from '../../interfaces/schedule-response';
 import { FlightViewModel } from '../../interfaces/flight-view-model';
-import {app} from '../../config/openfids.config';
+import {apiRequestUrl, app} from '../../config/openfids.config';
 
 @Component({
   selector: 'app-fids',
@@ -13,7 +13,6 @@ import {app} from '../../config/openfids.config';
 
 export class Fids {
   readonly iata = input.required<string>();
-  private readonly apiUrl = `${app.apiUrl}/schedules`;
   private readonly rowHeight = 60;
   readonly mode = signal<'departures' | 'arrivals'>(this.getStorageItem('fids_mode', 'departures') as 'departures' | 'arrivals');
   readonly uploadedImage = signal<string | null>(this.getStorageItem('fids_icon', null));
@@ -168,7 +167,7 @@ export class Fids {
     try {
       const isDep = this.mode() === 'departures';
       const param = isDep ? 'dep_iata' : 'arr_iata';
-      const url = `${this.apiUrl}?${param}=${encodeURIComponent(iata)}`;
+      const url = apiRequestUrl('schedules', {[param]: iata});
       const response = await fetch(url, {signal: controller.signal});
       if (!response.ok) {this.data.set([]);return;}
       const result = await response.json() as ScheduleResponse;

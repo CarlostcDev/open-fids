@@ -3,10 +3,11 @@ import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {toSignal} from '@angular/core/rxjs-interop';
 import {AirportsList} from '../airports-list/airports-list';
 import {RouterLink} from '@angular/router';
-import {app} from '../../config/openfids.config';
+import {apiRequestUrl} from '../../config/openfids.config';
 import {SearchAirport} from '../../interfaces/search-airport';
 import {Airport} from '../../interfaces/airport';
 import {NearbyAirport} from '../../interfaces/nearby-airport';
+import {environment} from '../../../environments/environment';
 
 @Component({
   selector: 'app-search-bar',
@@ -16,8 +17,8 @@ import {NearbyAirport} from '../../interfaces/nearby-airport';
 })
 
 export class SearchBar {
-  private readonly apiUrl = `${app.apiUrl}/airports`;
-  private readonly nearbyApiUrl = `${app.apiUrl}/nearby-airports`;
+  private readonly apiUrl = apiRequestUrl('airports');
+  private readonly nearbyApiUrl = apiRequestUrl('nearby-airports');
   private readonly fallbackUrl = 'data/airports-fallback.json';
   private readonly allAirports = signal<SearchAirport[]>([]);
   private readonly nearbyAirports = signal<Airport[]>([]);
@@ -55,6 +56,11 @@ export class SearchBar {
   }
 
   private async loadAirports(): Promise<void> {
+    if (!environment.production) {
+      await this.loadFallbackAirports();
+      return;
+    }
+
     try {
       const response = await fetch(this.apiUrl);
       if (!response.ok) {await this.loadFallbackAirports();return;}
@@ -93,7 +99,10 @@ export class SearchBar {
 
   private setAirports(airports: Airport[]): void {
     this.allAirports.set(airports.filter(airport => airport.iata_code).map(airport => ({
-      ...airport, searchName: airport.name.toLowerCase(), searchCity: '', searchIata: airport.iata_code.toLowerCase()
+      ...airport,
+      searchName: airport.name.toLowerCase(),
+      searchCity: '',
+      searchIata: airport.iata_code.toLowerCase()
     })));
   }
 }
