@@ -1,54 +1,37 @@
+export interface FlightTime {
+  local?: string;
+}
+
+export interface FlightAirport {
+  icao?: string;
+  iata?: string;
+  name?: string;
+  timeZone?: string;
+}
+
+export interface ScheduleLeg {
+  airport?: FlightAirport;
+  scheduledTime?: FlightTime;
+  revisedTime?: FlightTime;
+  runwayTime?: FlightTime;
+  terminal?: string;
+  checkInDesk?: string;
+  gate?: string;
+  runway?: string;
+  baggageBelt?: string;
+}
+
+export interface Codeshare {
+  iata?: string;
+  number?: string;
+}
+
 export interface Schedule {
-  departure?: {
-    airport?: {
-      icao?: string;
-      iata?: string;
-      name?: string;
-      countryCode?: string;
-      timeZone?: string;
-    };
-    scheduledTime?: {
-      utc?: string;
-      local?: string;
-    };
-    revisedTime?: {
-      utc?: string;
-      local?: string;
-    };
-    runwayTime?: {
-      utc?: string;
-      local?: string;
-    };
-    terminal?: string;
-    checkInDesk?: string;
-    gate?: string;
-    runway?: string;
-    quality?: string[];
-  };
-  arrival?: {
-    airport?: {
-      icao?: string;
-      iata?: string;
-      name?: string;
-      countryCode?: string;
-      timeZone?: string;
-    };
-    scheduledTime?: {
-      utc?: string;
-      local?: string;
-    };
-    revisedTime?: {
-      utc?: string;
-      local?: string;
-    };
-    terminal?: string;
-    baggageBelt?: string;
-    quality?: string[];
-  };
+  departure?: ScheduleLeg;
+  arrival?: ScheduleLeg;
   number?: string;
   callSign?: string;
   status?: string;
-  codeshareStatus?: string;
   isCargo?: boolean;
   aircraft?: {
     reg?: string;
@@ -60,4 +43,5 @@ export interface Schedule {
     iata?: string;
     icao?: string;
   };
+  codeshares?: Codeshare[];
 }

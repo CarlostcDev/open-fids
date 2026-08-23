@@ -1,17 +1,27 @@
 <h1 id="h1">OpenFIDS - Flight Information Display System</h1>
-<img [src]="'open-fids-banner-without' | assetPath:'banners'" alt="OpenFIDS - Flight Information Display System" id="banner" loading="eager" fetchpriority="high" width="1200" height="344">
-<form id="search-bar" role="search" [class.active]="results().length > 0" (submit)="$event.preventDefault()">
+<img [src]="'open-fids-banner-without' | assetPath:'banners'" alt="OpenFIDS" id="banner" loading="eager" fetchpriority="high" width="1200" height="344">
+
+@let activeResults = results();
+@let hasResults = activeResults.length > 0;
+
+<form id="search-bar" role="search" [class.active]="hasResults" (submit)="$event.preventDefault()">
   <svg id="search-svg" aria-hidden="true" focusable="false"><use [attr.href]="'aircraft' | sprite"></use></svg>
   <label for="search-input" class="cdk-visually-hidden">Search commercial airport</label>
   <input #searchInput type="search" id="search-input" name="search" autocomplete="off" role="combobox" aria-haspopup="listbox"
-    [value]="query()" (input)="query.set(searchInput.value)" (focus)="setFocus(true)" (blur)="setFocus(false)" placeholder="Search a commercial airport"
-    aria-autocomplete="list" [attr.aria-expanded]="results().length > 0">
+         [value]="query()" (input)="query.set(searchInput.value)" (focus)="setFocus(true)" (blur)="setFocus(false)" placeholder="Search a commercial airport"
+         aria-autocomplete="list" [attr.aria-expanded]="hasResults">
   <button type="submit" id="search-button" aria-label="Search airport">
     <svg id="search-button-svg" aria-hidden="true" focusable="false"><use [attr.href]="'search' | sprite"></use></svg>
     <span id="search-button-span" aria-hidden="true">Search</span>
   </button>
 </form>
-<app-airports-list [airports]="results()" [class.active]="results().length > 0"></app-airports-list>
+
+@if (hasResults) {
+  @defer (on immediate) {
+    <app-airports-list [airports]="activeResults" class="active"></app-airports-list>
+  }
+}
+
 <footer id="footer">
   <nav class="footer-navigator">
     <ul class="footer-list">

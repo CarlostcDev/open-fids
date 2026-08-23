@@ -15,19 +15,19 @@ import { Airport } from '../../interfaces/airport';
 })
 
 export class SearchBar implements OnInit {
-  private readonly airportService = inject(AirportService);
-  private readonly dataAirports = signal<SearchAirport[]>([]);
-  private readonly dataNearby = signal<Airport[]>([]);
+  private readonly airportApi = inject(AirportService);
   readonly isFocused = signal(false);
   readonly query = signal('');
+  private readonly allAirports = signal<SearchAirport[]>([]);
+  private readonly nearbyAirports = signal<Airport[]>([]);
 
   readonly results = computed(() => {
+    if (!this.isFocused()) return [];
     const q = this.query().trim().toLowerCase();
-    if (q.length < 3) return this.isFocused() ? this.dataNearby() : [];
-    const list = this.dataAirports();
+    if (q.length < 3) return this.nearbyAirports();
     const matches: Airport[] = [];
     let exact: Airport | null = null;
-    for (const airport of list) {
+    for (const airport of this.allAirports()) {
       if (airport.searchIata === q) {exact = airport;continue;}
       if (airport.searchIata.includes(q) || airport.searchName.includes(q) || airport.searchCity.includes(q)) matches.push(airport);
     }
@@ -36,11 +36,13 @@ export class SearchBar implements OnInit {
   });
 
   async ngOnInit() {
-    const hasAirportParam = new URLSearchParams(window.location.search).has('airport');
-    if (hasAirportParam) return;
-    const [airports, nearby] = await Promise.all([this.airportService.getAirports(), this.airportService.getNearby()]);
-    this.dataAirports.set(airports);
-    this.dataNearby.set(nearby);
+    if (new URLSearchParams(window.location.search).has('airport')) return;
+    const [airports, nearby] = await Promise.all([
+      this.airportApi.getAirports(),
+      this.airportApi.getNearby()
+    ]);
+    this.allAirports.set(airports);
+    this.nearbyAirports.set(nearby);
   }
 
   setFocus(state: boolean): void {

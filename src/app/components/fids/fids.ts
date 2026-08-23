@@ -1,7 +1,7 @@
 import { Component, DestroyRef, afterNextRender, computed, inject, input, signal } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import { ScheduleResponse } from '../../interfaces/schedule-response';
-import { FlightViewModel } from '../../interfaces/flight-view-model';
+import { FlightViewModel, CodeshareViewModel } from '../../interfaces/flight-view-model';
 import { apiRequestUrl, app } from '../../config/openfids.config';
 import { StorageService } from '../../services/storage.service';
 
@@ -27,8 +27,8 @@ export class Fids {
   private readonly rowHeight = 60;
 
   private readonly scheduleRequest = computed(() => {
-    const param = this.mode() === 'departures' ? 'dep_iata' : 'arr_iata';
-    return { url: apiRequestUrl('schedules', { [param]: this.iata() }) };
+    const queryParam = this.mode() === 'departures' ? 'dep_iata' : 'arr_iata';
+    return { url: apiRequestUrl('schedules', { [queryParam]: this.iata() }) };
   });
 
   readonly scheduleData = httpResource<ScheduleResponse>(this.scheduleRequest);
@@ -37,15 +37,21 @@ export class Fids {
     const response = this.scheduleData.value();
     if (!response) return [];
 
-    const isDep = this.mode() === 'departures';
-    const rawData = isDep ? (response.departures ?? []) : (response.arrivals ?? []);
-    const count = Math.max(0, Math.floor(this.listHeight() / this.rowHeight));
+    const isDeparture = this.mode() === 'departures';
+    const rawData = isDeparture ? (response.departures ?? []) : (response.arrivals ?? []);
+    const renderCount = Math.max(0, Math.floor(this.listHeight() / this.rowHeight));
 
-    return rawData.slice(0, count).map(flight => {
-      const node = isDep ? flight.departure : flight.arrival;
+    return rawData.slice(0, renderCount).map(flight => {
+      const node = isDeparture ? flight.departure : flight.arrival;
       const rawTime = node?.revisedTime?.local ?? node?.scheduledTime?.local;
       const status = flight.status ?? 'Scheduled';
       const statusLower = status.toLowerCase();
+
+      const codeshares: CodeshareViewModel[] = (flight.codeshares ?? []).map(cs => ({
+        airlineLogo: `${app.urlAirlineLogo}/${cs.iata ?? ''}.svg`,
+        airlineAlt: `Codeshare ${cs.iata ?? ''}`,
+        number: cs.number ?? '--'
+      }));
 
       return {
         number: flight.number ?? '--',
@@ -53,14 +59,15 @@ export class Fids {
         formattedTime: rawTime ? rawTime.slice(11, 16) : '--:--',
         airlineLogo: `${app.urlAirlineLogo}/${flight.airline?.iata ?? ''}.svg`,
         airlineAlt: `Airline logo ${flight.airline?.iata ?? ''}`,
-        airportCode: isDep ? (flight.arrival?.airport?.iata ?? '---') : (flight.departure?.airport?.iata ?? '---'),
-        airportName: isDep ? (flight.arrival?.airport?.name ?? '---') : (flight.departure?.airport?.name ?? '---'),
+        airportCode: isDeparture ? (flight.arrival?.airport?.iata ?? '---') : (flight.departure?.airport?.iata ?? '---'),
+        airportName: isDeparture ? (flight.arrival?.airport?.name ?? '---') : (flight.departure?.airport?.name ?? '---'),
         status,
         isDelayed: statusLower === 'delayed',
         isScheduled: statusLower === 'expected' || statusLower === 'scheduled',
         isBoarding: statusLower === 'boarding',
-        terminal: isDep ? (flight.departure?.terminal ?? '-') : (flight.arrival?.terminal ?? '-'),
-        gate: flight.departure?.gate ?? '-'
+        terminal: isDeparture ? (flight.departure?.terminal ?? '-') : (flight.arrival?.terminal ?? '-'),
+        gate: flight.departure?.gate ?? '-',
+        codeshares
       };
     });
   });
@@ -71,28 +78,28 @@ export class Fids {
       this.updateTime();
       this.applyColor(this.themeColor());
 
-      const resizeFn = () => this.updateHeight();
-      const timer = setInterval(() => this.updateTime(), 60000);
+      const handleResize = () => this.updateHeight();
+      const clockTimer = setInterval(() => this.updateTime(), 60000);
 
-      window.addEventListener('resize', resizeFn);
+      window.addEventListener('resize', handleResize);
 
       this.destroyRef.onDestroy(() => {
-        window.removeEventListener('resize', resizeFn);
-        clearInterval(timer);
+        window.removeEventListener('resize', handleResize);
+        clearInterval(clockTimer);
       });
     });
   }
 
   toggleMode(): void {
-    const next = this.mode() === 'departures' ? 'arrivals' : 'departures';
-    this.mode.set(next);
-    this.storage.set('fids_mode', next);
+    const nextMode = this.mode() === 'departures' ? 'arrivals' : 'departures';
+    this.mode.set(nextMode);
+    this.storage.set('fids_mode', nextMode);
   }
 
   toggleTime(): void {
-    const next = !this.format12h();
-    this.format12h.set(next);
-    this.storage.set('fids_time_format', String(next));
+    const nextFormat = !this.format12h();
+    this.format12h.set(nextFormat);
+    this.storage.set('fids_time_format', String(nextFormat));
     this.updateTime();
   }
 
@@ -112,9 +119,9 @@ export class Fids {
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      const res = e.target?.result as string;
-      this.customIcon.set(res);
-      this.storage.set('fids_icon', res);
+      const result = e.target?.result as string;
+      this.customIcon.set(result);
+      this.storage.set('fids_icon', result);
     };
     reader.readAsDataURL(file);
     target.value = '';
@@ -125,21 +132,21 @@ export class Fids {
   }
 
   changeColor(event: Event): void {
-    const val = (event.target as HTMLInputElement).value;
-    this.themeColor.set(val);
-    this.storage.set('fids_theme_color', val);
-    this.applyColor(val);
+    const value = (event.target as HTMLInputElement).value;
+    this.themeColor.set(value);
+    this.storage.set('fids_theme_color', value);
+    this.applyColor(value);
   }
 
   private applyColor(color: string): void {
-    const id = 'fids-color';
-    let el = document.getElementById(id);
-    if (!el) {
-      el = document.createElement('style');
-      el.id = id;
-      document.head.appendChild(el);
+    const styleId = 'fids-color';
+    let styleEl = document.getElementById(styleId);
+    if (!styleEl) {
+      styleEl = document.createElement('style');
+      styleEl.id = styleId;
+      document.head.appendChild(styleEl);
     }
-    el.textContent = `
+    styleEl.textContent = `
       :not(svg).color-selection { color: ${color} !important; fill: ${color} !important; }
       svg.color-selection { background: ${color} !important; }
     `;
@@ -150,9 +157,9 @@ export class Fids {
   }
 
   private updateHeight(): void {
-    const el = document.querySelector<HTMLElement>('#flight-list');
-    if (el && el.clientHeight !== this.listHeight()) {
-      this.listHeight.set(el.clientHeight);
+    const container = document.querySelector<HTMLElement>('#flight-list');
+    if (container && container.clientHeight !== this.listHeight()) {
+      this.listHeight.set(container.clientHeight);
     }
   }
 }

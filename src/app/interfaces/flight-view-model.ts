@@ -1,3 +1,9 @@
+export interface CodeshareViewModel {
+  airlineLogo: string;
+  airlineAlt: string;
+  number: string;
+}
+
 export interface FlightViewModel {
   number: string;
   rawTime: string | undefined;
@@ -12,4 +18,5 @@ export interface FlightViewModel {
   isBoarding: boolean;
   terminal: string;
   gate: string;
+  codeshares: CodeshareViewModel[];
 }
